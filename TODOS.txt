@@ -1,0 +1,8 @@
+TODOS
+=====
+
+1. Pause button
+   - Add a pause button that allows the game to be paused and resumed later.
+
+2. Rules button
+   - Add a rules button that pops up the rules mid-game.
