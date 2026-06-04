@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "play": "vite-node scripts/play.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -29,16 +29,27 @@ const GameContext = createContext<{
   dispatch: Dispatch<Action>
 } | null>(null)
 
-export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, load)
+export function GameProvider({
+  children,
+  initialState: injected,
+  persist = true,
+}: {
+  children: ReactNode
+  /** Seed the reducer with a fixed state (e.g. for the storybook) instead of localStorage. */
+  initialState?: GameState
+  /** When false, never touch localStorage — keeps previews from clobbering a real game. */
+  persist?: boolean
+}) {
+  const [state, dispatch] = useReducer(reducer, injected, (seed) => seed ?? load())
 
   useEffect(() => {
+    if (!persist) return
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     } catch {
       // Storage full or unavailable — the game still plays, just won't resume.
     }
-  }, [state])
+  }, [state, persist])
 
   return <GameContext.Provider value={{ state, dispatch }}>{children}</GameContext.Provider>
 }
