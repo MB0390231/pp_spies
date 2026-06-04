@@ -4,7 +4,7 @@ import { MAX_PLAYERS, MIN_PLAYERS, spyCount } from '../engine'
 import { useGame } from '../state/GameContext'
 
 /** Public screen: choose player count and enter names, then assign roles. */
-export function Setup() {
+export function Setup({ onHowToPlay }: { onHowToPlay?: () => void }) {
   const { dispatch } = useGame()
   const [names, setNames] = useState<string[]>(() => Array(MIN_PLAYERS).fill(''))
 
@@ -62,6 +62,12 @@ export function Setup() {
       <Button onClick={start} disabled={!canStart} className="w-full max-w-sm">
         {canStart ? 'Assign roles' : !unique ? 'Names must be unique' : 'Enter every name'}
       </Button>
+
+      {onHowToPlay && (
+        <Button variant="neutral" onClick={onHowToPlay} className="w-full max-w-sm">
+          How to play
+        </Button>
+      )}
     </div>
   )
 }
