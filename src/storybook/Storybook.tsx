@@ -4,6 +4,8 @@
 // a non-persisting GameProvider seeded with that scenario's GameState.
 
 import { useState } from 'react'
+import { PauseOverlay } from '../components/PauseOverlay'
+import { RulesOverlay } from '../components/RulesOverlay'
 import { ScoreTrack } from '../components/ScoreTrack'
 import { GameProvider } from '../state/GameContext'
 import { scenarios } from './fixtures'
@@ -43,15 +45,29 @@ export function Storybook() {
           {active.note && <p className="mt-1 text-xs text-slate-400">{active.note}</p>}
         </div>
 
-        {/* Phone frame — mirrors the live app's root layout. */}
-        <div className="h-[780px] w-[380px] overflow-y-auto rounded-[2rem] border-4 border-slate-700 shadow-2xl">
+        {/* Phone frame — mirrors the live app's root layout. `transform-gpu` for
+            overlay scenarios makes the frame a containing block so PauseOverlay's
+            `fixed inset-0` is scoped to the phone, not the whole gallery window. */}
+        <div
+          className={`h-[780px] w-[380px] overflow-y-auto rounded-[2rem] border-4 border-slate-700 shadow-2xl ${
+            active.overlay ? 'transform-gpu' : ''
+          }`}
+        >
           <div className="flex min-h-full flex-col items-center bg-slate-900 text-slate-100">
             {active.showScore && <ScoreTrack state={active.state} />}
-            <div className="flex w-full max-w-md flex-1 flex-col">
-              <GameProvider key={active.id} initialState={active.state} persist={false}>
-                <Screen />
-              </GameProvider>
-            </div>
+            {active.overlay === 'pause' ? (
+              <PauseOverlay onResume={() => {}} onQuit={() => {}} onViewRules={() => {}} />
+            ) : active.overlay === 'rules' ? (
+              <RulesOverlay onClose={() => {}} />
+            ) : (
+              Screen && (
+                <div className="flex w-full max-w-md flex-1 flex-col">
+                  <GameProvider key={active.id} initialState={active.state} persist={false}>
+                    <Screen />
+                  </GameProvider>
+                </div>
+              )
+            )}
           </div>
         </div>
       </main>
