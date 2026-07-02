@@ -49,6 +49,8 @@ export interface GameState {
   players: Player[]
   /** Number of spies for this player count (cached for convenience). */
   spyCount: number
+  /** Challenge mode: missions 1 & 2 send one extra player. */
+  challengeMode: boolean
 
   /** 1-based current mission number (1..5). */
   round: number
@@ -82,7 +84,7 @@ export type Action =
    * Begin a game. `seed` drives role assignment and first-leader choice so the
    * reducer stays pure — generate it at the call site (e.g. Date.now()).
    */
-  | { type: 'SETUP'; names: string[]; seed: number }
+  | { type: 'SETUP'; names: string[]; seed: number; challengeMode?: boolean }
   /** Leave role reveal and start the first round. */
   | { type: 'START_ROUNDS' }
   /** Leader proposes a team (must match the required size). */

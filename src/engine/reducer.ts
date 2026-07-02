@@ -19,6 +19,7 @@ export function initialState(): GameState {
     phase: 'setup',
     players: [],
     spyCount: 0,
+    challengeMode: false,
     round: 1,
     leaderIndex: 0,
     consecutiveRejects: 0,
@@ -42,7 +43,7 @@ export function currentLeaderId(state: GameState): number | null {
 /** Required team size for the current round, or 0 if not in a game. */
 export function currentTeamSize(state: GameState): number {
   if (state.players.length === 0) return 0
-  return teamSize(state.players.length, state.round)
+  return teamSize(state.players.length, state.round, state.challengeMode)
 }
 
 function nextLeaderIndex(state: GameState): number {
@@ -69,6 +70,7 @@ export function reducer(state: GameState, action: Action): GameState {
         phase: 'roleReveal',
         players,
         spyCount: spyCount(n),
+        challengeMode: action.challengeMode ?? false,
         leaderIndex,
       }
     }

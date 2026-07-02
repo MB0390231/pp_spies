@@ -12,12 +12,12 @@ import {
 
 describe('spyCount', () => {
   it('matches the README table', () => {
-    expect([5, 6, 7, 8, 9, 10].map(spyCount)).toEqual([2, 2, 3, 3, 3, 4])
+    expect([5, 6, 7, 8, 9, 10, 11, 12, 13].map(spyCount)).toEqual([2, 2, 3, 3, 3, 4, 4, 4, 5])
   })
 
   it('rejects invalid player counts', () => {
     expect(() => spyCount(4)).toThrow()
-    expect(() => spyCount(11)).toThrow()
+    expect(() => spyCount(14)).toThrow()
     expect(() => spyCount(5.5)).toThrow()
   })
 })
@@ -30,6 +30,9 @@ describe('teamSize', () => {
     8: [3, 4, 4, 5, 5],
     9: [3, 4, 4, 5, 5],
     10: [3, 4, 4, 5, 5],
+    11: [4, 5, 5, 6, 6],
+    12: [4, 5, 6, 6, 6],
+    13: [4, 5, 6, 6, 7],
   }
 
   it('matches the README table for every player count and round', () => {
@@ -43,6 +46,28 @@ describe('teamSize', () => {
   it('rejects out-of-range rounds', () => {
     expect(() => teamSize(5, 0)).toThrow()
     expect(() => teamSize(5, 6)).toThrow()
+  })
+
+  describe('challenge mode', () => {
+    it('adds one player on rounds 1 and 2 for every player count', () => {
+      for (const n of Object.keys(table).map(Number)) {
+        expect(teamSize(n, 1, true)).toBe(teamSize(n, 1) + 1)
+        expect(teamSize(n, 2, true)).toBe(teamSize(n, 2) + 1)
+      }
+    })
+
+    it('leaves rounds 3-5 unchanged', () => {
+      for (const n of Object.keys(table).map(Number)) {
+        for (const round of [3, 4, 5]) {
+          expect(teamSize(n, round, true)).toBe(teamSize(n, round))
+        }
+      }
+    })
+
+    it('defaults to baseline sizes when the flag is omitted', () => {
+      expect(teamSize(7, 1)).toBe(2)
+      expect(teamSize(7, 1, false)).toBe(2)
+    })
   })
 })
 
@@ -104,9 +129,9 @@ describe('voteApproved', () => {
 })
 
 describe('isValidPlayerCount', () => {
-  it('accepts 5-10 only', () => {
-    expect([5, 6, 7, 8, 9, 10].every(isValidPlayerCount)).toBe(true)
+  it('accepts 5-13 only', () => {
+    expect([5, 6, 7, 8, 9, 10, 11, 12, 13].every(isValidPlayerCount)).toBe(true)
     expect(isValidPlayerCount(4)).toBe(false)
-    expect(isValidPlayerCount(11)).toBe(false)
+    expect(isValidPlayerCount(14)).toBe(false)
   })
 })

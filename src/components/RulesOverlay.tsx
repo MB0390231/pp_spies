@@ -9,7 +9,7 @@
 
 import { SPY_COUNTS, TEAM_SIZES } from '../engine'
 
-const PLAYER_COUNTS = [5, 6, 7, 8, 9, 10] as const
+const PLAYER_COUNTS = [5, 6, 7, 8, 9, 10, 11, 12, 13] as const
 const ROUNDS = [1, 2, 3, 4, 5] as const
 
 /** One labeled section card — matches the tutorial CoachMark vocabulary. */
@@ -120,6 +120,7 @@ export function RulesOverlay({ onClose }: { onClose: () => void }) {
               ))}
             </tbody>
           </table>
+          <p className="text-xs text-slate-400">Challenge mode: +1 player on missions 1 &amp; 2.</p>
         </Section>
 
         <Section title="Voting">

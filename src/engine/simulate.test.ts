@@ -10,9 +10,9 @@ import {
 } from './simulate'
 import type { GameState } from './types'
 
-const NAMES = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy']
+const NAMES = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy', 'Kevin', 'Laura', 'Mallory']
 const names = (n: number) => NAMES.slice(0, n)
-const PLAYER_COUNTS = [5, 6, 7, 8, 9, 10] as const
+const PLAYER_COUNTS = [5, 6, 7, 8, 9, 10, 11, 12, 13] as const
 
 describe('simulateGame — win-condition scenarios', () => {
   it('cooperative play lets the Resistance win with 3 successes', () => {
