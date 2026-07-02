@@ -7,6 +7,7 @@ import { useGame } from '../state/GameContext'
 export function Setup({ onHowToPlay }: { onHowToPlay?: () => void }) {
   const { dispatch } = useGame()
   const [names, setNames] = useState<string[]>(() => Array(MIN_PLAYERS).fill(''))
+  const [challengeMode, setChallengeMode] = useState(false)
 
   const trimmed = names.map((n) => n.trim())
   const allNamed = trimmed.every((n) => n.length > 0)
@@ -18,7 +19,7 @@ export function Setup({ onHowToPlay }: { onHowToPlay?: () => void }) {
   }
 
   function start() {
-    dispatch({ type: 'SETUP', names: trimmed, seed: Date.now() })
+    dispatch({ type: 'SETUP', names: trimmed, seed: Date.now(), challengeMode })
   }
 
   return (
@@ -58,6 +59,19 @@ export function Setup({ onHowToPlay }: { onHowToPlay?: () => void }) {
           + Player
         </Button>
       </div>
+
+      <label className="flex w-full max-w-sm cursor-pointer items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3">
+        <input
+          type="checkbox"
+          checked={challengeMode}
+          onChange={(e) => setChallengeMode(e.target.checked)}
+          className="h-5 w-5 accent-emerald-500"
+        />
+        <span className="flex flex-col">
+          <span className="text-lg">Challenge mode</span>
+          <span className="text-sm text-slate-400">Missions 1 &amp; 2 send +1 player.</span>
+        </span>
+      </label>
 
       <Button onClick={start} disabled={!canStart} className="w-full max-w-sm">
         {canStart ? 'Assign roles' : !unique ? 'Names must be unique' : 'Enter every name'}

@@ -9,7 +9,7 @@ import { spyCount, teamSize } from './rules'
 import { cooperativeStrategy, simulateGame, type Strategy } from './simulate'
 import type { GameState, MissionCard, Player } from './types'
 
-const WITH_RULE = [7, 8, 9, 10] as const // counts where Round 4 needs two fails
+const WITH_RULE = [7, 8, 9, 10, 11, 12, 13] as const // counts where Round 4 needs two fails
 const WITHOUT_RULE = [5, 6] as const
 
 // Players where ids [0, spyCount) are spies and the rest are resistance — a

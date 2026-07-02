@@ -18,12 +18,15 @@ import { VoteReveal } from '../screens/VoteReveal'
 export interface Scenario {
   id: string
   label: string
-  Screen: ComponentType
+  /** The phase screen to render. Omitted for full-frame overlays (see `overlay`). */
+  Screen?: ComponentType
   state: GameState
   /** Optional caption shown under the title (e.g. handoff hint for private screens). */
   note?: string
   /** Render the public ScoreTrack header above the screen, as the live app does. */
   showScore?: boolean
+  /** Render a full-frame overlay instead of a phase Screen. */
+  overlay?: 'pause' | 'rules'
 }
 
 const GATE_HINT = 'Private screen — tap the handoff to reveal what the player sees.'
@@ -205,5 +208,19 @@ export const scenarios: Scenario[] = [
     label: 'Game Over — Spies win',
     Screen: GameOver,
     state: make({ phase: 'gameOver', players: P5, spyCount: 2, winner: 'spies', successes: 1, fails: 3 }),
+  },
+  {
+    id: 'pause',
+    label: 'Pause Overlay',
+    note: 'Shown mid-game; tap "Quit to menu" to see the confirm state.',
+    overlay: 'pause',
+    state: make({ phase: 'teamProposal', players: P5, spyCount: 2, round: 1, leaderIndex: 0 }),
+  },
+  {
+    id: 'rules',
+    label: 'Rules Overlay',
+    note: 'Mid-game quick reference; opened from the top bar or the Pause screen.',
+    overlay: 'rules',
+    state: make({ phase: 'teamProposal', players: P5, spyCount: 2, round: 1, leaderIndex: 0 }),
   },
 ]

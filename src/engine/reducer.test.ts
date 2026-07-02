@@ -76,6 +76,28 @@ describe('SETUP', () => {
       reducer(initialState(), { type: 'SETUP', names: ['a', 'b', 'c', 'd'], seed: 1 }),
     ).toThrow()
   })
+
+  it('defaults challengeMode to false when omitted', () => {
+    const state = reducer(initialState(), { type: 'SETUP', names: NAMES7, seed: 1 })
+    expect(state.challengeMode).toBe(false)
+  })
+
+  it('stores challengeMode and requires the +1 team size on round 1', () => {
+    const setup = reducer(initialState(), {
+      type: 'SETUP',
+      names: NAMES7,
+      seed: 1,
+      challengeMode: true,
+    })
+    expect(setup.challengeMode).toBe(true)
+
+    const state = reducer(setup, { type: 'START_ROUNDS' })
+    expect(currentTeamSize(state)).toBe(3) // 7 players, round 1: baseline 2 + 1
+    expect(() => reducer(state, { type: 'PROPOSE_TEAM', team: [0, 1] })).toThrow()
+    const proposed = reducer(state, { type: 'PROPOSE_TEAM', team: [0, 1, 2] })
+    expect(proposed.phase).toBe('vote')
+    expect(proposed.proposedTeam).toEqual([0, 1, 2])
+  })
 })
 
 describe('team proposal', () => {

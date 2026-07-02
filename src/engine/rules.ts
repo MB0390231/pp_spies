@@ -5,7 +5,7 @@ import { shuffle } from './random'
 import type { Role } from './types'
 
 export const MIN_PLAYERS = 5
-export const MAX_PLAYERS = 10
+export const MAX_PLAYERS = 13
 export const MISSIONS = 5
 export const MISSIONS_TO_WIN = 3
 export const MAX_REJECTS = 5
@@ -18,6 +18,9 @@ export const SPY_COUNTS: Readonly<Record<number, number>> = {
   8: 3,
   9: 3,
   10: 4,
+  11: 4,
+  12: 4,
+  13: 5,
 }
 
 /** Mission team size by player count, indexed [round-1] for rounds 1..5. */
@@ -28,6 +31,9 @@ export const TEAM_SIZES: Readonly<Record<number, readonly number[]>> = {
   8: [3, 4, 4, 5, 5],
   9: [3, 4, 4, 5, 5],
   10: [3, 4, 4, 5, 5],
+  11: [4, 5, 5, 6, 6],
+  12: [4, 5, 6, 6, 6],
+  13: [4, 5, 6, 6, 7],
 }
 
 export function isValidPlayerCount(n: number): boolean {
@@ -52,11 +58,16 @@ export function spyCount(n: number): number {
   return SPY_COUNTS[n]!
 }
 
-/** Required team size for a player count and 1-based round. */
-export function teamSize(n: number, round: number): number {
+/**
+ * Required team size for a player count and 1-based round. Challenge mode
+ * sends one extra player on rounds 1 and 2.
+ */
+export function teamSize(n: number, round: number, challenge = false): number {
   assertPlayerCount(n)
   assertRound(round)
-  return TEAM_SIZES[n]![round - 1]!
+  const base = TEAM_SIZES[n]![round - 1]!
+  if (challenge && (round === 1 || round === 2)) return base + 1
+  return base
 }
 
 /**
