@@ -26,7 +26,7 @@ export interface Scenario {
   /** Render the public ScoreTrack header above the screen, as the live app does. */
   showScore?: boolean
   /** Render a full-frame overlay instead of a phase Screen. */
-  overlay?: 'pause' | 'rules'
+  overlay?: 'pause' | 'rules' | 'settings'
 }
 
 const GATE_HINT = 'Private screen — tap the handoff to reveal what the player sees.'
@@ -222,5 +222,12 @@ export const scenarios: Scenario[] = [
     note: 'Mid-game quick reference; opened from the top bar or the Pause screen.',
     overlay: 'rules',
     state: make({ phase: 'teamProposal', players: P5, spyCount: 2, round: 1, leaderIndex: 0 }),
+  },
+  {
+    id: 'settings',
+    label: 'Settings Sheet',
+    note: 'Opened from the gear on Setup. Theme picks here are previews only (not persisted).',
+    overlay: 'settings',
+    state: make({ phase: 'setup' }),
   },
 ]

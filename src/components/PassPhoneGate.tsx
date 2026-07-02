@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { fmt, useLexicon } from '../theme'
 import { Button } from './Button'
 
 /**
@@ -9,24 +10,28 @@ import { Button } from './Button'
  */
 export function PassPhoneGate({
   name,
-  prompt = 'Pass the phone to',
+  prompt,
   children,
 }: {
   name: string
+  /** Override the eyebrow line; defaults to the theme's handoff prompt. */
   prompt?: string
   children: ReactNode
 }) {
+  const lex = useLexicon()
   const [revealed, setRevealed] = useState(false)
 
   if (revealed) return <>{children}</>
 
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-8 p-6 text-center">
-      <p className="text-lg uppercase tracking-widest text-slate-400">{prompt}</p>
-      <h2 className="text-5xl font-extrabold">{name}</h2>
-      <Button onClick={() => setRevealed(true)}>I'm {name} — Tap</Button>
-      <p className="max-w-xs text-xs text-slate-500">
-        Make sure nobody else can see the screen before tapping.
+    <div className="flex min-h-full animate-rise flex-col items-center justify-center gap-8 p-6 text-center">
+      <p className="font-mono text-sm uppercase tracking-label text-faint">
+        {prompt ?? lex.handoff.prompt}
+      </p>
+      <h2 className="font-display text-5xl font-extrabold text-ink">{name}</h2>
+      <Button onClick={() => setRevealed(true)}>{fmt(lex.handoff.confirm, { name })}</Button>
+      <p className="max-w-xs text-xs leading-relaxed text-faint">
+        {fmt(lex.handoff.privacy, { name })}
       </p>
     </div>
   )

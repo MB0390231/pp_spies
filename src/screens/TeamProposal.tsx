@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Button } from '../components/Button'
 import { currentLeaderId, currentTeamSize } from '../engine'
 import { useGame } from '../state/GameContext'
+import { fmt, useLexicon } from '../theme'
 
 /** Public screen: the leader selects exactly the required players for the mission. */
 export function TeamProposal() {
   const { state, dispatch } = useGame()
+  const lex = useLexicon()
   const [selected, setSelected] = useState<number[]>([])
 
   const leaderId = currentLeaderId(state)
@@ -28,12 +30,15 @@ export function TeamProposal() {
   }
 
   return (
-    <div className="flex min-h-full flex-col items-center gap-5 p-6">
+    <div className="flex min-h-full animate-rise flex-col items-center gap-5 p-6">
       <div className="text-center">
-        <p className="text-sm uppercase tracking-widest text-slate-400">Leader</p>
-        <h2 className="text-3xl font-bold">{leader?.name}</h2>
-        <p className="mt-1 text-slate-400">
-          Pick {required} for the mission ({selected.length}/{required})
+        <p className="font-mono text-sm uppercase tracking-label text-faint">
+          {lex.proposal.eyebrow}
+        </p>
+        <h2 className="font-display text-3xl font-bold text-ink">{leader?.name}</h2>
+        <p className="mt-2 text-muted">{fmt(lex.proposal.instruction, { count: required })}</p>
+        <p className="mt-1 font-mono text-xs uppercase tracking-label text-faint">
+          {fmt(lex.proposal.counter, { selected: selected.length, count: required })}
         </p>
       </div>
 
@@ -43,15 +48,20 @@ export function TeamProposal() {
           return (
             <button
               key={p.id}
+              type="button"
               onClick={() => toggle(p.id)}
-              className={`rounded-xl border-2 px-4 py-4 text-lg font-semibold transition active:scale-95 ${
+              className={`relative rounded-field border-2 px-4 py-4 text-lg font-semibold transition duration-fast ease-theme active:scale-[0.97] ${
                 on
-                  ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
-                  : 'border-slate-700 bg-slate-800 text-slate-200'
-              } ${p.id === leaderId ? 'ring-1 ring-slate-500' : ''}`}
+                  ? 'border-accent bg-accent/15 text-accent shadow-glow-accent'
+                  : 'border-line bg-surface text-ink hover:border-line-strong'
+              }`}
             >
               {p.name}
-              {p.id === leaderId && <span className="ml-1 text-xs text-slate-400">★</span>}
+              {p.id === leaderId && (
+                <span className="absolute -top-2 right-2 rounded-chip border border-line-strong bg-raised px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-label text-muted">
+                  {lex.proposal.leaderBadge}
+                </span>
+              )}
             </button>
           )
         })}
@@ -60,9 +70,9 @@ export function TeamProposal() {
       <Button
         onClick={propose}
         disabled={selected.length !== required}
-        className="w-full max-w-sm"
+        className="mt-auto w-full max-w-sm"
       >
-        Propose team
+        {lex.proposal.cta}
       </Button>
     </div>
   )

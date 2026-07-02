@@ -17,6 +17,7 @@ import { Vote } from './screens/Vote'
 import { VoteReveal } from './screens/VoteReveal'
 import { useGame } from './state/GameContext'
 import { usePaused } from './state/usePaused'
+import { useLexicon } from './theme'
 
 const SCREENS: Record<Phase, ComponentType> = {
   setup: Setup,
@@ -48,8 +49,22 @@ const PAUSABLE: ReadonlySet<Phase> = new Set<Phase>([
   'missionReveal',
 ])
 
+/** Quiet top-bar action (Rules / Pause) — a labeled utility, not a primary CTA. */
+function TopBarButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-control border border-line bg-surface/80 px-4 py-2 font-mono text-xs uppercase tracking-label text-muted transition duration-fast ease-theme hover:border-line-strong hover:text-ink active:scale-95"
+    >
+      {label}
+    </button>
+  )
+}
+
 export default function App() {
   const { state, dispatch } = useGame()
+  const lex = useLexicon()
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [rulesOpen, setRulesOpen] = useState(false)
   const [paused, setPaused] = usePaused()
@@ -62,25 +77,11 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-full flex-col items-center bg-slate-900 text-slate-100">
+    <div className="flex min-h-full flex-col items-center text-ink">
       {canPause && !paused && (
         <div className="flex w-full max-w-md justify-end gap-2 px-3 pt-3">
-          <button
-            type="button"
-            aria-label="Open rules"
-            onClick={() => setRulesOpen(true)}
-            className="rounded-lg bg-slate-700 px-3 py-2 text-sm text-slate-100 transition hover:bg-slate-600 active:scale-95"
-          >
-            Rules
-          </button>
-          <button
-            type="button"
-            aria-label="Pause game"
-            onClick={() => setPaused(true)}
-            className="rounded-lg bg-slate-700 px-3 py-2 text-sm text-slate-100 transition hover:bg-slate-600 active:scale-95"
-          >
-            Pause
-          </button>
+          <TopBarButton label={lex.topBar.rules} onClick={() => setRulesOpen(true)} />
+          <TopBarButton label={lex.topBar.pause} onClick={() => setPaused(true)} />
         </div>
       )}
       {IN_GAME.has(state.phase) && <ScoreTrack state={state} />}

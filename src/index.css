@@ -2,13 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-  height: 100%;
+@layer base {
+  /* Fallback tokens (= Midnight Dossier) so the very first paint — before
+     ThemeProvider's effect writes the live values — is already on-theme. */
+  :root {
+    --c-bg: 12 18 25;
+    --c-surface: 20 30 41;
+    --c-raised: 29 43 58;
+    --c-line: 43 60 78;
+    --c-line-strong: 65 89 114;
+    --c-ink: 234 241 247;
+    --c-muted: 148 168 187;
+    --c-faint: 96 115 135;
+    --c-accent: 55 214 192;
+    --c-accent-ink: 4 32 29;
+    --c-danger: 240 86 79;
+    --c-danger-ink: 43 6 5;
+    --c-focus: 127 232 220;
+
+    --f-display: 'Avenir Next Condensed', 'Bahnschrift', 'Arial Narrow',
+      'Roboto Condensed', system-ui, sans-serif;
+    --f-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+      sans-serif;
+    --f-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', Menlo,
+      Consolas, monospace;
+    --tr-label: 0.22em;
+
+    --r-card: 1.25rem;
+    --r-control: 0.875rem;
+    --r-field: 0.75rem;
+    --r-chip: 0.5rem;
+
+    --sh-card: 0 12px 32px rgb(0 0 0 / 0.35);
+    --sh-pop: 0 20px 48px rgb(0 0 0 / 0.5);
+    --sh-glow-accent: 0 0 24px rgb(55 214 192 / 0.25);
+    --sh-glow-danger: 0 0 24px rgb(240 86 79 / 0.25);
+
+    --m-fast: 120ms;
+    --m-base: 220ms;
+    --m-slow: 420ms;
+    --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+    --ease-spring: cubic-bezier(0.2, 1.1, 0.3, 1.15);
+
+    --decor-backdrop: radial-gradient(
+        120% 60% at 50% -10%,
+        rgb(55 214 192 / 0.07),
+        transparent 60%
+      ),
+      radial-gradient(100% 40% at 50% 110%, rgb(240 86 79 / 0.05), transparent 60%);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    -webkit-tap-highlight-color: transparent;
+    background-color: rgb(var(--c-bg));
+    background-image: var(--decor-backdrop);
+    background-attachment: fixed;
+    color: rgb(var(--c-ink));
+    font-family: var(--f-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-focus));
+    outline-offset: 2px;
+  }
 }
 
-body {
-  margin: 0;
-  -webkit-tap-highlight-color: transparent;
+@layer utilities {
+  /* The themed app background: color + decor layer. Used by full-screen
+     overlays (Pause, Rules, Tutorial) and the storybook phone frame so they
+     match the body backdrop exactly. */
+  .bg-backdrop {
+    background-color: rgb(var(--c-bg));
+    background-image: var(--decor-backdrop);
+  }
 }

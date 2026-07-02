@@ -23,11 +23,13 @@ export function CoachMark({
   return (
     <section
       role="region"
-      aria-label="Tutorial coach"
-      className="flex w-full max-w-sm flex-col gap-3 rounded-xl border border-slate-700 bg-slate-800/80 p-4 text-left"
+      aria-label={title}
+      className="flex w-full max-w-sm flex-col gap-3 rounded-card border border-line bg-surface/90 p-4 text-left shadow-card"
     >
-      <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">{title}</p>
-      <div className="text-sm leading-relaxed text-slate-300">{children}</div>
+      <p className="font-mono text-xs font-semibold uppercase tracking-label text-accent">
+        {title}
+      </p>
+      <div className="text-sm leading-relaxed text-muted">{children}</div>
       {cta && (
         <Button onClick={onCta} disabled={ctaDisabled} className="w-full">
           {cta}

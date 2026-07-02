@@ -30,3 +30,6 @@ pnpm-debug.log*
 
 # Test coverage
 coverage/
+
+# Claude Code local config
+.claude/

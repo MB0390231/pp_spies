@@ -1,10 +1,12 @@
 import { Button } from '../components/Button'
 import { PassPhoneGate } from '../components/PassPhoneGate'
 import { useGame } from '../state/GameContext'
+import { fmt, useLexicon } from '../theme'
 
 /** Private per-player: everyone secretly approves or rejects the proposed team. */
 export function Vote() {
   const { state, dispatch } = useGame()
+  const lex = useLexicon()
 
   const pending = state.players.filter((p) => !(p.id in state.votes))
   const current = pending[0]
@@ -18,28 +20,30 @@ export function Vote() {
 
   return (
     <PassPhoneGate key={current.id} name={current.name}>
-      <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-slate-500">
-          {voted}/{state.players.length} voted
+      <div className="flex min-h-full animate-rise flex-col items-center justify-center gap-6 p-6 text-center">
+        <p className="font-mono text-xs uppercase tracking-label text-faint">
+          {fmt(lex.vote.progress, { done: voted, total: state.players.length })}
         </p>
-        <div>
-          <p className="text-sm uppercase tracking-widest text-slate-400">Proposed team</p>
-          <p className="mt-1 text-xl font-semibold text-slate-100">{team}</p>
+        <div className="w-full max-w-sm rounded-card border border-line bg-surface/80 p-5 shadow-card">
+          <p className="font-mono text-xs uppercase tracking-label text-faint">
+            {lex.vote.teamLabel}
+          </p>
+          <p className="mt-2 text-xl font-semibold text-ink">{team}</p>
         </div>
-        <p className="text-slate-300">Send this team on the mission?</p>
+        <p className="text-muted">{lex.vote.question}</p>
         <div className="flex w-full max-w-sm gap-3">
           <Button
             className="flex-1"
             onClick={() => dispatch({ type: 'CAST_VOTE', playerId: current.id, vote: 'approve' })}
           >
-            Approve
+            {lex.vote.approve}
           </Button>
           <Button
             variant="danger"
             className="flex-1"
             onClick={() => dispatch({ type: 'CAST_VOTE', playerId: current.id, vote: 'reject' })}
           >
-            Reject
+            {lex.vote.reject}
           </Button>
         </div>
       </div>

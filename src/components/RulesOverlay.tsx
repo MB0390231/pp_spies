@@ -4,19 +4,40 @@
 // Approve/Reject buttons, the mission cards. It owns no game state and never
 // dispatches: App passes a single onClose. The team-size / spy-count tables are
 // rendered from the engine's pure data (TEAM_SIZES, SPY_COUNTS) so they can't
-// drift from the real rules. Illustrations are plain styled divs (no live game
-// components, no emoji).
+// drift from the real rules. All copy comes from the theme lexicon; section
+// bodies support **bold** spans.
 
 import { SPY_COUNTS, TEAM_SIZES } from '../engine'
+import { fmt, useLexicon } from '../theme'
 
 const PLAYER_COUNTS = [5, 6, 7, 8, 9, 10, 11, 12, 13] as const
 const ROUNDS = [1, 2, 3, 4, 5] as const
 
+/** Renders a lexicon body string, turning `**bold**` spans into <strong>. */
+function Rich({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.+?)\*\*/g)
+  return (
+    <p className="text-sm leading-relaxed text-muted">
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold text-ink">
+            {part}
+          </strong>
+        ) : (
+          part
+        ),
+      )}
+    </p>
+  )
+}
+
 /** One labeled section card — matches the tutorial CoachMark vocabulary. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-800/80 p-4">
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-emerald-400">{title}</h2>
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-surface/80 p-4 shadow-card">
+      <h2 className="font-mono text-xs font-semibold uppercase tracking-label text-accent">
+        {title}
+      </h2>
       {children}
     </section>
   )
@@ -24,23 +45,21 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 /** A small colored chip that mirrors a real button without being one. */
 function Chip({ tone, children }: { tone: 'success' | 'fail'; children: React.ReactNode }) {
-  const color = tone === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
+  const color = tone === 'success' ? 'bg-accent text-accent-ink' : 'bg-danger text-danger-ink'
   return (
-    <span className={`rounded-lg px-4 py-2 text-sm font-semibold text-slate-900 ${color}`}>
-      {children}
-    </span>
+    <span className={`rounded-chip px-4 py-2 text-sm font-semibold ${color}`}>{children}</span>
   )
 }
 
 /** A static mirror of the score track: success / failed / upcoming / current. */
 function FauxTrack() {
-  const tones = ['bg-emerald-500', 'bg-rose-500', 'bg-slate-700', 'bg-slate-700', 'bg-slate-700']
+  const tones = ['bg-accent', 'bg-danger', 'bg-raised', 'bg-raised', 'bg-raised']
   return (
     <div className="flex gap-2">
       {tones.map((color, i) => (
         <div
           key={i}
-          className={`h-2 flex-1 rounded-full ${color} ${i === 2 ? 'ring-2 ring-slate-400' : ''}`}
+          className={`h-2 flex-1 rounded-full ${color} ${i === 2 ? 'ring-2 ring-line-strong' : ''}`}
         />
       ))}
     </div>
@@ -48,105 +67,82 @@ function FauxTrack() {
 }
 
 export function RulesOverlay({ onClose }: { onClose: () => void }) {
+  const lex = useLexicon()
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Game rules"
-      className="fixed inset-0 z-[60] overflow-y-auto bg-slate-900 text-slate-100"
+      aria-label={lex.rules.title}
+      className="bg-backdrop fixed inset-0 z-[60] animate-fade overflow-y-auto text-ink"
     >
-      <div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-6 p-6">
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-5 p-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Rules</h1>
+          <h1 className="font-display text-3xl font-bold">{lex.rules.title}</h1>
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-2 text-sm text-slate-400 transition hover:text-slate-100"
+            className="rounded-control px-3 py-2 font-mono text-xs uppercase tracking-label text-muted transition duration-fast ease-theme hover:text-ink"
           >
-            Close
+            {lex.rules.close}
           </button>
         </div>
 
-        <Section title="The goal">
-          <p className="text-sm leading-relaxed text-slate-300">
-            Resistance wins by completing <strong>3 successful missions</strong>. Spies win with{' '}
-            <strong>3 failed missions</strong> — or by getting <strong>5 teams rejected in a row</strong>.
-            Some players are secretly Spies; everyone else is Resistance.
-          </p>
+        <Section title={lex.rules.goal.title}>
+          <Rich text={lex.rules.goal.body} />
         </Section>
 
-        <Section title="The track (top of the screen)">
+        <Section title={lex.rules.track.title}>
           <FauxTrack />
-          <p className="text-sm leading-relaxed text-slate-300">
-            The five bars across the top are the missions. They fill{' '}
-            <span className="font-semibold text-emerald-400">green</span> for a success,{' '}
-            <span className="font-semibold text-rose-400">red</span> for a failure, and the outlined one
-            is the mission you're on. The <strong>Rejects N / 5</strong> counter beside it tracks teams
-            voted down in a row — it turns red at 3, and hitting 5 hands the win to the Spies.
-          </p>
+          <Rich text={lex.rules.track.body} />
         </Section>
 
-        <Section title="Teams & rounds">
-          <p className="text-sm leading-relaxed text-slate-300">
-            Each round the leader picks who goes on the mission. The number needed grows in later rounds
-            and depends on how many are playing. The leader passes to the next player every round — and
-            every time a team is voted down — so everyone gets a turn.
-          </p>
+        <Section title={lex.rules.teams.title}>
+          <Rich text={lex.rules.teams.body} />
           <table className="w-full border-separate border-spacing-1 text-center text-xs">
             <thead>
-              <tr className="text-slate-400">
-                <th className="font-medium">Players</th>
+              <tr className="font-mono text-faint">
+                <th className="font-medium">{lex.rules.playersCol}</th>
                 {ROUNDS.map((r) => (
                   <th key={r} className="font-medium">
-                    R{r}
+                    {fmt(lex.rules.roundCol, { n: r })}
                   </th>
                 ))}
-                <th className="font-medium">Spies</th>
+                <th className="font-medium">{lex.rules.spiesCol}</th>
               </tr>
             </thead>
             <tbody>
               {PLAYER_COUNTS.map((n) => (
                 <tr key={n}>
-                  <td className="rounded bg-slate-800 py-1 font-semibold text-slate-200">{n}</td>
+                  <td className="rounded-chip bg-raised py-1 font-semibold text-ink">{n}</td>
                   {TEAM_SIZES[n]!.map((size, i) => (
-                    <td key={i} className="rounded bg-slate-800 py-1 text-slate-300">
+                    <td key={i} className="rounded-chip bg-raised py-1 text-muted">
                       {size}
                     </td>
                   ))}
-                  <td className="rounded bg-slate-800 py-1 font-semibold text-emerald-300">
+                  <td className="rounded-chip bg-raised py-1 font-semibold text-accent">
                     {SPY_COUNTS[n]}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="text-xs text-slate-400">Challenge mode: +1 player on missions 1 &amp; 2.</p>
+          <p className="text-xs text-faint">{lex.rules.hardModeNote}</p>
         </Section>
 
-        <Section title="Voting">
+        <Section title={lex.rules.voting.title}>
           <div className="flex gap-2">
-            <Chip tone="success">Approve</Chip>
-            <Chip tone="fail">Reject</Chip>
+            <Chip tone="success">{lex.rules.chips.approve}</Chip>
+            <Chip tone="fail">{lex.rules.chips.reject}</Chip>
           </div>
-          <p className="text-sm leading-relaxed text-slate-300">
-            Every player votes to approve or reject the proposed team. Votes aren't secret — once
-            everyone has voted they're revealed one by one, so you see exactly who approved and who
-            rejected. A strict majority sends the team; a tie counts as a rejection and the next player
-            becomes leader.
-          </p>
+          <Rich text={lex.rules.voting.body} />
         </Section>
 
-        <Section title="Missions">
+        <Section title={lex.rules.missions.title}>
           <div className="flex gap-2">
-            <Chip tone="success">Succeed</Chip>
-            <Chip tone="fail">Fail</Chip>
+            <Chip tone="success">{lex.rules.chips.succeed}</Chip>
+            <Chip tone="fail">{lex.rules.chips.fail}</Chip>
           </div>
-          <p className="text-sm leading-relaxed text-slate-300">
-            Each team member secretly plays a card. Cards are shuffled before they're shown, so nobody
-            knows who played what. Resistance can only <strong>Succeed</strong>; only Spies may{' '}
-            <strong>Fail</strong>. A single fail card sinks the mission — except the{' '}
-            <strong>4th mission with 7 or more players</strong>, which needs two.
-          </p>
+          <Rich text={lex.rules.missions.body} />
         </Section>
       </div>
     </div>

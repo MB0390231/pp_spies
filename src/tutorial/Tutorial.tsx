@@ -3,9 +3,10 @@ import { Button } from '../components/Button'
 import { PassPhoneGate } from '../components/PassPhoneGate'
 import { mulberry32, shuffle } from '../engine'
 import type { MissionCard } from '../engine'
+import { fmt, useLexicon } from '../theme'
 import { CoachMark } from './CoachMark'
 import { FauxScoreTrack } from './FauxScoreTrack'
-import { BOT_VOTES, CAST, COACH, playerName, SPY_COUNT, TEAM_SIZE, YOU_ID } from './script'
+import { BOT_VOTES, CAST_ROLES, SPY_COUNT, TEAM_SIZE, YOU_ID } from './script'
 
 type SceneId =
   | 'intro'
@@ -33,12 +34,23 @@ const ORDER: SceneId[] = [
  * scene state machine and renders faux versions of each screen from the shared
  * Button / PassPhoneGate primitives. It never imports the engine reducer or
  * useGame, never dispatches, and never writes localStorage — so a real saved
- * game is untouchable and the pure engine stays out of it entirely.
+ * game is untouchable and the pure engine stays out of it entirely. Copy and
+ * cast names come from the theme lexicon (lexicon.tutorial).
  */
 export function Tutorial({ onExit }: { onExit: () => void }) {
+  const lex = useLexicon()
   const [scene, setScene] = useState<SceneId>('intro')
   const [selected, setSelected] = useState<number[]>([])
   const [voteNudge, setVoteNudge] = useState(false)
+
+  const coach = lex.tutorial.coach
+  // Seat 0 is the learner; the four bot names come from the active theme.
+  const cast = CAST_ROLES.map((role, id) => ({
+    id,
+    role,
+    name: id === YOU_ID ? lex.tutorial.you : lex.tutorial.botNames[id - 1]!,
+  }))
+  const playerName = (id: number) => cast.find((p) => p.id === id)?.name ?? ''
 
   // The proposed team — the player's pick once it's 2, otherwise a sensible
   // default so downstream scenes still work if a section is skipped.
@@ -72,33 +84,37 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900 text-slate-100">
+    <div className="bg-backdrop fixed inset-0 z-50 animate-fade overflow-y-auto text-ink">
       <button
+        type="button"
         onClick={onExit}
-        aria-label="Back to main menu"
-        className="absolute left-3 top-3 z-10 rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:text-slate-100"
+        aria-label={lex.tutorial.back}
+        className="absolute left-3 top-3 z-10 rounded-control px-3 py-2 font-mono text-xs uppercase tracking-label text-muted transition duration-fast ease-theme hover:text-ink"
       >
-        ◂ Back
+        ◂ {lex.tutorial.back}
       </button>
       <div className="absolute right-3 top-3 z-10 flex gap-2">
         <button
+          type="button"
           onClick={goPrev}
           disabled={!hasPrev}
-          aria-label="Previous section"
-          className="rounded-lg bg-slate-700 px-3 py-2 text-sm text-slate-100 transition hover:bg-slate-600 disabled:opacity-40"
+          aria-label={lex.tutorial.prev}
+          className="rounded-control border border-line bg-raised px-3 py-2 text-sm text-ink transition duration-fast ease-theme hover:border-line-strong disabled:opacity-40"
         >
           ◂
         </button>
         <button
+          type="button"
           onClick={goNext}
           disabled={!hasNext}
-          aria-label="Next section"
-          className="rounded-lg bg-slate-700 px-3 py-2 text-sm text-slate-100 transition hover:bg-slate-600 disabled:opacity-40"
+          aria-label={lex.tutorial.next}
+          className="rounded-control border border-line bg-raised px-3 py-2 text-sm text-ink transition duration-fast ease-theme hover:border-line-strong disabled:opacity-40"
         >
           ▸
         </button>
       </div>
-      <div className="mx-auto flex min-h-full w-full max-w-md flex-col">{renderScene()}</div>
+      {/* pt-14 clears the fixed Back / prev / next controls above. */}
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col pt-14">{renderScene()}</div>
     </div>
   )
 
@@ -108,38 +124,49 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
         return (
           <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
             <div>
-              <h1 className="text-3xl font-bold">🕵️ Spies</h1>
-              <p className="mt-1 text-slate-400">
-                {CAST.length} players · {SPY_COUNT} spies
+              <h1 className="font-display text-4xl font-bold text-ink">
+                <span aria-hidden className="mr-2">
+                  {lex.app.icon}
+                </span>
+                {lex.app.name}
+              </h1>
+              <p className="mt-2 text-sm text-muted">
+                {fmt(lex.setup.summary, { players: cast.length, spies: SPY_COUNT })}
               </p>
             </div>
             <ul className="flex flex-wrap justify-center gap-2">
-              {CAST.map((p) => (
+              {cast.map((p) => (
                 <li
                   key={p.id}
-                  className={`rounded-lg bg-slate-800 px-3 py-2 text-sm font-semibold ${
-                    p.id === YOU_ID ? 'text-emerald-300' : 'text-slate-200'
+                  className={`rounded-chip border px-3 py-2 text-sm font-semibold ${
+                    p.id === YOU_ID
+                      ? 'border-accent/60 bg-accent/10 text-accent'
+                      : 'border-line bg-surface text-ink'
                   }`}
                 >
                   {p.name}
                 </li>
               ))}
             </ul>
-            <CoachMark title={COACH.intro.title} cta={COACH.intro.cta} onCta={() => setScene('role')}>
-              {COACH.intro.body}
+            <CoachMark title={coach.intro.title} cta={coach.intro.cta} onCta={() => setScene('role')}>
+              {coach.intro.body}
             </CoachMark>
           </div>
         )
 
       case 'role':
         return (
-          <PassPhoneGate key="role" name="You">
+          <PassPhoneGate key="role" name={lex.tutorial.you}>
             <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
-              <p className="text-sm uppercase tracking-widest text-slate-400">You are</p>
-              <h2 className="text-5xl font-extrabold text-emerald-400">RESISTANCE</h2>
-              <p className="max-w-xs text-slate-300">Make missions succeed. Find the spies before they win.</p>
-              <CoachMark title={COACH.role.title} cta={COACH.role.cta} onCta={() => setScene('proposal')}>
-                {COACH.role.body}
+              <p className="font-mono text-sm uppercase tracking-label text-faint">
+                {lex.roleReveal.eyebrow}
+              </p>
+              <h2 className="font-display text-5xl font-extrabold uppercase text-accent">
+                {lex.roleReveal.goodTitle}
+              </h2>
+              <p className="max-w-xs leading-relaxed text-muted">{lex.roleReveal.goodBody}</p>
+              <CoachMark title={coach.role.title} cta={coach.role.cta} onCta={() => setScene('proposal')}>
+                {coach.role.body}
               </CoachMark>
             </div>
           </PassPhoneGate>
@@ -150,40 +177,50 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
           <div className="flex min-h-full flex-col items-center gap-5 pb-6">
             <FauxScoreTrack round={1} results={[]} rejects={0} />
             <div className="text-center">
-              <p className="text-sm uppercase tracking-widest text-slate-400">Leader</p>
-              <h2 className="text-3xl font-bold">You</h2>
-              <p className="mt-1 text-slate-400">
-                Pick {TEAM_SIZE} for the mission ({selected.length}/{TEAM_SIZE})
+              <p className="font-mono text-sm uppercase tracking-label text-faint">
+                {lex.proposal.eyebrow}
+              </p>
+              <h2 className="font-display text-3xl font-bold text-ink">{lex.tutorial.you}</h2>
+              <p className="mt-2 text-muted">
+                {fmt(lex.proposal.instruction, { count: TEAM_SIZE })}
+              </p>
+              <p className="mt-1 font-mono text-xs uppercase tracking-label text-faint">
+                {fmt(lex.proposal.counter, { selected: selected.length, count: TEAM_SIZE })}
               </p>
             </div>
             <div className="grid w-full max-w-sm grid-cols-2 gap-3 px-6">
-              {CAST.map((p) => {
+              {cast.map((p) => {
                 const on = selected.includes(p.id)
                 const isLeader = p.id === YOU_ID
                 return (
                   <button
                     key={p.id}
+                    type="button"
                     onClick={() => toggleSelect(p.id)}
-                    className={`rounded-xl border-2 px-4 py-4 text-lg font-semibold transition active:scale-95 ${
+                    className={`relative rounded-field border-2 px-4 py-4 text-lg font-semibold transition duration-fast ease-theme active:scale-[0.97] ${
                       on
-                        ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
-                        : 'border-slate-700 bg-slate-800 text-slate-200'
-                    } ${isLeader ? 'ring-1 ring-slate-500' : ''}`}
+                        ? 'border-accent bg-accent/15 text-accent shadow-glow-accent'
+                        : 'border-line bg-surface text-ink hover:border-line-strong'
+                    }`}
                   >
                     {p.name}
-                    {isLeader && <span className="ml-1 text-xs text-slate-400">★</span>}
+                    {isLeader && (
+                      <span className="absolute -top-2 right-2 rounded-chip border border-line-strong bg-raised px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-label text-muted">
+                        {lex.proposal.leaderBadge}
+                      </span>
+                    )}
                   </button>
                 )
               })}
             </div>
             <div className="px-6">
               <CoachMark
-                title={COACH.proposal.title}
-                cta={COACH.proposal.cta}
+                title={coach.proposal.title}
+                cta={coach.proposal.cta}
                 ctaDisabled={selected.length !== TEAM_SIZE}
                 onCta={() => setScene('vote')}
               >
-                {COACH.proposal.body}
+                {coach.proposal.body}
               </CoachMark>
             </div>
           </div>
@@ -194,32 +231,30 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
         const names = team.map((id) => playerName(id))
         return (
           <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
-            <div>
-              <p className="text-sm uppercase tracking-widest text-slate-400">Proposed team</p>
-              <p className="mt-1 text-xl font-semibold text-slate-100">{names.join(', ')}</p>
+            <div className="w-full max-w-sm rounded-card border border-line bg-surface/80 p-5 shadow-card">
+              <p className="font-mono text-xs uppercase tracking-label text-faint">
+                {lex.vote.teamLabel}
+              </p>
+              <p className="mt-2 text-xl font-semibold text-ink">{names.join(', ')}</p>
             </div>
-            <p className="text-slate-300">Send this team on the mission?</p>
+            <p className="text-muted">{lex.vote.question}</p>
             <div className="flex w-full max-w-sm gap-3">
               <Button className="flex-1" onClick={() => setScene('voteReveal')}>
-                Approve
+                {lex.vote.approve}
               </Button>
               <Button variant="danger" className="flex-1" onClick={() => setVoteNudge(true)}>
-                Reject
+                {lex.vote.reject}
               </Button>
             </div>
-            {voteNudge && (
-              <p className="text-xs text-rose-300">
-                In a real game you could reject — but tap Approve to send this team and keep learning.
-              </p>
-            )}
-            <CoachMark title={COACH.vote.title}>{COACH.vote.body}</CoachMark>
+            {voteNudge && <p className="max-w-sm text-xs text-danger">{lex.tutorial.voteNudge}</p>}
+            <CoachMark title={coach.vote.title}>{coach.vote.body}</CoachMark>
           </div>
         )
       }
 
       case 'voteReveal': {
         // Hard-coded outcome: You + 3 bots approve, 1 bot rejects → APPROVED.
-        const votes = CAST.map((p) => ({
+        const votes = cast.map((p) => ({
           name: p.name,
           vote: p.id === YOU_ID ? ('approve' as const) : BOT_VOTES[p.id],
         }))
@@ -227,30 +262,34 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
         const reject = votes.length - approve
         return (
           <div className="flex min-h-full flex-col items-center gap-5 p-6">
-            <h2 className="text-2xl font-bold">The vote</h2>
+            <h2 className="font-display text-3xl font-bold text-ink">{lex.voteReveal.title}</h2>
             <ul className="flex w-full max-w-sm flex-col gap-2">
               {votes.map((v) => (
                 <li
                   key={v.name}
-                  className="flex items-center justify-between rounded-lg bg-slate-800 px-4 py-3"
+                  className="flex items-center justify-between rounded-field border border-line bg-surface px-4 py-3"
                 >
-                  <span className="font-semibold">{v.name}</span>
-                  <span className={v.vote === 'approve' ? 'text-emerald-400' : 'text-rose-400'}>
-                    {v.vote === 'approve' ? '✔ Approve' : '✘ Reject'}
+                  <span className="font-semibold text-ink">{v.name}</span>
+                  <span
+                    className={`font-semibold ${v.vote === 'approve' ? 'text-accent' : 'text-danger'}`}
+                  >
+                    {v.vote === 'approve' ? `✔ ${lex.vote.approve}` : `✘ ${lex.vote.reject}`}
                   </span>
                 </li>
               ))}
             </ul>
-            <p className="text-3xl font-extrabold text-emerald-400">APPROVED</p>
-            <p className="text-slate-400">
-              {approve} approve · {reject} reject
+            <p className="font-display text-4xl font-extrabold uppercase text-accent">
+              {lex.voteReveal.approved}
+            </p>
+            <p className="font-mono text-xs uppercase tracking-label text-faint">
+              {fmt(lex.voteReveal.tally, { approve, reject })}
             </p>
             <CoachMark
-              title={COACH.voteReveal.title}
-              cta={COACH.voteReveal.cta}
+              title={coach.voteReveal.title}
+              cta={coach.voteReveal.cta}
               onCta={() => setScene('mission')}
             >
-              {COACH.voteReveal.body}
+              {coach.voteReveal.body}
             </CoachMark>
           </div>
         )
@@ -260,29 +299,26 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
         // Mission cards ARE secret, so this stays behind a handoff — but only if
         // you're actually on the team. Otherwise your teammates play in private.
         return youOnTeam ? (
-          <PassPhoneGate key="mission" name="You">
+          <PassPhoneGate key="mission" name={lex.tutorial.you}>
             <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
-              <p className="text-slate-300">Play your mission card.</p>
+              <p className="text-lg text-muted">{lex.mission.prompt}</p>
               <div className="flex w-full max-w-sm flex-col gap-3">
-                <Button onClick={() => setScene('missionReveal')}>Succeed</Button>
+                <Button onClick={() => setScene('missionReveal')}>{lex.mission.succeed}</Button>
                 <Button variant="danger" disabled>
-                  Fail (sabotage)
+                  {lex.mission.fail}
                 </Button>
-                <p className="text-xs text-slate-500">
-                  Resistance can only succeed — make this mission count.
-                </p>
+                <p className="text-xs leading-relaxed text-faint">{lex.mission.lockedHint}</p>
               </div>
-              <CoachMark title={COACH.mission.title}>{COACH.mission.body}</CoachMark>
+              <CoachMark title={coach.mission.title}>{coach.mission.body}</CoachMark>
             </div>
           </PassPhoneGate>
         ) : (
           <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
-            <p className="text-slate-300">
-              You sent {team.map((id) => playerName(id)).join(' and ')} — you’re not on this mission, so
-              they play their cards in secret.
+            <p className="max-w-sm leading-relaxed text-muted">
+              {fmt(lex.tutorial.notOnTeam, { a: playerName(team[0]!), b: playerName(team[1]!) })}
             </p>
-            <Button onClick={() => setScene('missionReveal')}>See the result</Button>
-            <CoachMark title={COACH.mission.title}>{COACH.mission.body}</CoachMark>
+            <Button onClick={() => setScene('missionReveal')}>{lex.tutorial.seeResult}</Button>
+            <CoachMark title={coach.mission.title}>{coach.mission.body}</CoachMark>
           </div>
         )
 
@@ -293,25 +329,31 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
         const display = shuffle(cards, mulberry32(7))
         return (
           <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
-            <h2 className="text-2xl font-bold">Mission 1</h2>
+            <h2 className="font-display text-3xl font-bold text-ink">
+              {fmt(lex.missionReveal.title, { round: 1 })}
+            </h2>
             <div className="flex flex-wrap justify-center gap-3">
               {display.map((card, i) => (
                 <div
                   key={i}
-                  className="flex h-20 w-14 items-center justify-center rounded-lg bg-emerald-500 text-2xl font-bold text-slate-900"
+                  className="flex h-20 w-14 items-center justify-center rounded-field bg-accent text-2xl font-bold text-accent-ink shadow-glow-accent"
                 >
                   {card === 'success' ? '✔' : '✘'}
                 </div>
               ))}
             </div>
-            <p className="text-3xl font-extrabold text-emerald-400">MISSION SUCCEEDED</p>
-            <p className="text-slate-400">0 fail cards</p>
+            <p className="font-display text-4xl font-extrabold uppercase text-accent">
+              {lex.missionReveal.success}
+            </p>
+            <p className="font-mono text-xs uppercase tracking-label text-faint">
+              {fmt(lex.missionReveal.failsMany, { count: 0 })}
+            </p>
             <CoachMark
-              title={COACH.missionReveal.title}
-              cta={COACH.missionReveal.cta}
+              title={coach.missionReveal.title}
+              cta={coach.missionReveal.cta}
               onCta={() => setScene('outro')}
             >
-              {COACH.missionReveal.body}
+              {coach.missionReveal.body}
             </CoachMark>
           </div>
         )
@@ -322,12 +364,14 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
           <div className="flex min-h-full flex-col items-center gap-5 pb-6">
             <FauxScoreTrack round={2} results={['success']} rejects={0} />
             <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 text-center">
-              <p className="text-2xl font-bold text-emerald-400">1 / 3 missions complete</p>
-              <CoachMark title={COACH.outro.title} cta={COACH.outro.cta} onCta={onExit}>
-                {COACH.outro.body}
+              <p className="font-display text-2xl font-bold text-accent">
+                {lex.tutorial.outroProgress}
+              </p>
+              <CoachMark title={coach.outro.title} cta={coach.outro.cta} onCta={onExit}>
+                {coach.outro.body}
               </CoachMark>
               <Button variant="neutral" className="w-full max-w-sm" onClick={replay}>
-                Replay tutorial
+                {lex.tutorial.replay}
               </Button>
             </div>
           </div>

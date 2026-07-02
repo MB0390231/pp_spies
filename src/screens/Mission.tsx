@@ -1,10 +1,12 @@
 import { Button } from '../components/Button'
 import { PassPhoneGate } from '../components/PassPhoneGate'
 import { useGame } from '../state/GameContext'
+import { fmt, useLexicon } from '../theme'
 
 /** Private per-team-member: play Succeed/Fail. Resistance is locked to Succeed. */
 export function Mission() {
   const { state, dispatch } = useGame()
+  const lex = useLexicon()
 
   const pending = state.proposedTeam.filter((id) => !(id in state.missionCards))
   const currentId = pending[0]
@@ -17,28 +19,26 @@ export function Mission() {
 
   return (
     <PassPhoneGate key={player.id} name={player.name}>
-      <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-slate-500">
-          {played}/{state.proposedTeam.length} cards played
+      <div className="flex min-h-full animate-rise flex-col items-center justify-center gap-6 p-6 text-center">
+        <p className="font-mono text-xs uppercase tracking-label text-faint">
+          {fmt(lex.mission.progress, { done: played, total: state.proposedTeam.length })}
         </p>
-        <p className="text-slate-300">Play your mission card.</p>
+        <p className="text-lg text-muted">{lex.mission.prompt}</p>
         <div className="flex w-full max-w-sm flex-col gap-3">
           <Button
             onClick={() => dispatch({ type: 'PLAY_CARD', playerId: player.id, card: 'success' })}
           >
-            Succeed
+            {lex.mission.succeed}
           </Button>
           {isSpy ? (
             <Button
               variant="danger"
               onClick={() => dispatch({ type: 'PLAY_CARD', playerId: player.id, card: 'fail' })}
             >
-              Fail (sabotage)
+              {lex.mission.fail}
             </Button>
           ) : (
-            <p className="text-xs text-slate-500">
-              Resistance can only succeed — make this mission count.
-            </p>
+            <p className="text-xs leading-relaxed text-faint">{lex.mission.lockedHint}</p>
           )}
         </div>
       </div>
