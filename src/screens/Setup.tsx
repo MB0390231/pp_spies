@@ -29,7 +29,7 @@ export function Setup({ onHowToPlay }: { onHowToPlay?: () => void }) {
   }
 
   return (
-    <div className="relative flex min-h-full animate-rise flex-col items-center gap-6 p-6 pt-12">
+    <div className="relative flex min-h-full animate-rise flex-col items-center gap-6 p-6 pt-20">
       <button
         type="button"
         aria-label={lex.setup.settings}
