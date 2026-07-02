@@ -94,8 +94,3 @@ export function buildRoles(n: number, rng: () => number): Role[] {
   ]
   return shuffle(roles, rng)
 }
-
-/** A vote passes only with a strict majority of approvals; ties reject. */
-export function voteApproved(approveCount: number, rejectCount: number): boolean {
-  return approveCount > rejectCount
-}

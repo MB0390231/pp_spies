@@ -1,6 +1,6 @@
 # Spies — Pass & Play
 
-A single-device, pass-and-play version of **Spies**, a hidden-role social deduction game inspired by *The Resistance*. One phone is shared around the group: players take turns holding it to see their secret role, cast hidden votes, and play mission cards. The game runs entirely in the browser — no accounts, no server, no internet required after the page loads.
+A single-device, pass-and-play version of **Spies**, a hidden-role social deduction game inspired by *The Resistance*. One phone is shared around the group: players take turns holding it to see their secret role and play mission cards, while proposal votes happen out loud by show of hands. The game runs entirely in the browser — no accounts, no server, no internet required after the page loads.
 
 Because everyone shares one device, the game needs no backend at all. The rules are a body of deterministic, pure functions (`(state, action) → nextState`) made trustworthy by tests rather than a database, and secrecy is handled by **pass-the-phone handoff screens** rather than the network.
 
@@ -60,10 +60,9 @@ On a single shared device, secrecy can't come from the network — it comes from
 This "pass to [player]" gate appears before every private moment:
 
 - **Role reveal** — at game start, each player privately views their role, then passes on.
-- **Voting** — each player privately votes Approve/Reject behind a handoff, so no one sees another's vote until the reveal.
 - **Mission cards** — each team member privately plays Succeed/Fail (Resistance can only Succeed) behind a handoff.
 
-Public moments — the leader proposing a team, the dramatic vote reveal, mission outcomes, and the win screen — are shown openly for the whole group to watch together.
+Public moments — the leader proposing a team, the proposal vote (a show of hands recorded with one tap), mission outcomes, and the win screen — are shown openly for the whole group to watch together.
 
 ---
 
@@ -95,8 +94,7 @@ spies_pass_and_play/
 │   │   ├── Setup.tsx          # choose player count, enter names
 │   │   ├── RoleReveal.tsx     # private role view (behind handoff)
 │   │   ├── TeamProposal.tsx   # leader picks the team (public)
-│   │   ├── Vote.tsx           # private approve/reject (behind handoff)
-│   │   ├── VoteReveal.tsx     # dramatic one-by-one reveal (public)
+│   │   ├── ProposalVote.tsx   # public show-of-hands, one-tap Passed/Failed
 │   │   ├── Mission.tsx        # private succeed/fail (behind handoff)
 │   │   ├── MissionReveal.tsx  # shuffled outcome (public)
 │   │   └── GameOver.tsx       # winner screen
@@ -127,9 +125,9 @@ The **`engine/`** directory is the heart of the app and is intentionally framewo
 Each round runs three phases:
 
 1. **Team Proposal** *(public)* — the leader selects exactly the required number of players for the mission.
-2. **Voting** *(private per player → public reveal)* — every player approves or rejects behind a handoff, then votes are revealed one-by-one for dramatic effect.
-   - Majority approve → mission proceeds.
-   - Rejected → leader rotates to the next player; **5 consecutive rejections = Spies win**.
+2. **Proposal Vote** *(public, one tap)* — the whole table votes out loud by show of hands; one person records the result with a single Passed/Failed tap. No phone-passing.
+   - Passed → mission proceeds.
+   - Failed → leader rotates to the next player; **5 consecutive rejections = Spies win**.
 3. **Mission** *(private per team member → public reveal)* — each team member plays Succeed or Fail (Resistance is locked to Succeed). Cards are shuffled and revealed anonymously.
    - 1 fail = mission fails (2 fails required on Round 4 with 7+ players).
 
@@ -140,10 +138,10 @@ Each round runs three phases:
 The full state machine mirrors the original game exactly:
 
 ```
-SETUP → ROLE REVEAL → [ TEAM PROPOSAL → VOTE → (approved?) ]
-                                          │
-                          ┌───────────────┴───────────────┐
-                          ▼ approved                       ▼ rejected
+SETUP → ROLE REVEAL → [ TEAM PROPOSAL → PROPOSAL VOTE → (passed?) ]
+                                             │
+                          ┌──────────────────┴────────────┐
+                          ▼ passed                         ▼ failed
                        MISSION                     rotate leader
                           │                         5 rejects → Spies win
                           ▼
@@ -157,7 +155,7 @@ SETUP → ROLE REVEAL → [ TEAM PROPOSAL → VOTE → (approved?) ]
 1. **Pure game engine** — all rules live in `src/engine/` as deterministic functions with no UI dependencies, unit-tested independently.
 2. **Client-only** — no server means no sync bugs, no race conditions, no auth, and free static hosting.
 3. **Secrecy via handoff screens** — a reusable `PassPhoneGate` component guards every private view; nothing private renders until the named player confirms they're holding the phone.
-4. **Anonymous reveals** — votes and mission cards are shuffled before display so card order never leaks who played what.
+4. **Anonymous reveals** — mission cards are shuffled before display so card order never leaks who played what.
 5. **Crash-safe sessions** — the full game state is persisted to localStorage after every action, so an accidental refresh or screen lock never loses a game in progress.
 6. **Mobile-first** — every screen is designed for a phone held in one hand and passed around.
 
@@ -215,7 +213,7 @@ npm run build        # outputs dist/
 - [ ] localStorage persistence / resume
 
 ### Phase 2 — Polish
-- [ ] Animations and sound for vote/mission reveals
+- [ ] Animations and sound for mission reveals
 - [ ] In-app rules reference / first-time tutorial
 - [ ] Accessibility pass (contrast, larger tap targets, screen-reader labels)
 - [ ] PWA support (installable + offline)

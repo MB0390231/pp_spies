@@ -6,14 +6,17 @@
 import { mulberry32, shuffle } from './random'
 import { currentTeamSize, initialState, reducer } from './reducer'
 import { MAX_REJECTS, MISSIONS_TO_WIN } from './rules'
-import type { GameState, MissionCard, Player, Vote } from './types'
+import type { GameState, MissionCard, Player } from './types'
 
 /** Decides every choice a game requires. Pure functions of the public state. */
 export interface Strategy {
   /** The current leader's team pick (size is validated by the reducer). */
   proposeTeam(state: GameState): number[]
-  /** How `playerId` votes on the proposed team. */
-  vote(state: GameState, playerId: number): Vote
+  /**
+   * The table's one-tap verdict on the proposed team. Voting happens out
+   * loud (show of hands); the engine only records the outcome.
+   */
+  approveProposal(state: GameState): boolean
   /** The card `playerId` plays on the mission (resistance is coerced to success). */
   playCard(state: GameState, playerId: number): MissionCard
 }
@@ -64,25 +67,14 @@ export function simulateGame(names: string[], seed: number, strategy: Strategy):
         break
       }
 
-      case 'vote': {
-        for (const p of state.players) {
-          state = reducer(state, {
-            type: 'CAST_VOTE',
-            playerId: p.id,
-            vote: strategy.vote(state, p.id),
-          })
-        }
-        break
-      }
-
-      case 'voteReveal': {
-        const v = state.lastVote!
+      case 'proposalVote': {
+        const approved = strategy.approveProposal(state)
         transcript.push({
-          round: v.round,
-          text: `  vote: ${v.approveCount} approve / ${v.rejectCount} reject → ${v.approved ? 'APPROVED' : 'REJECTED'}`,
+          round: state.round,
+          text: `  proposal: ${approved ? 'PASSED' : 'FAILED'}`,
         })
-        state = reducer(state, { type: 'CONFIRM_VOTE' })
-        if (!v.approved && state.phase === 'teamProposal') {
+        state = reducer(state, { type: 'RESOLVE_PROPOSAL', approved })
+        if (!approved && state.phase === 'teamProposal') {
           transcript.push({
             round: state.round,
             text: `  rejected (${state.consecutiveRejects}/${MAX_REJECTS} consecutive) — leader rotates`,
@@ -150,24 +142,24 @@ function teamPreferring(state: GameState, preferred: number[]): number[] {
 const spyIds = (state: GameState): number[] =>
   state.players.filter((p) => p.role === 'spy').map((p) => p.id)
 
-/** Everyone approves and every card succeeds → the Resistance wins. */
+/** Every proposal passes and every card succeeds → the Resistance wins. */
 export const cooperativeStrategy: Strategy = {
   proposeTeam: (s) => teamPreferring(s, []),
-  vote: () => 'approve',
+  approveProposal: () => true,
   playCard: () => 'success',
 }
 
 /** Leaders stack the team with spies who always sabotage → the Spies win. */
 export const saboteurStrategy: Strategy = {
   proposeTeam: (s) => teamPreferring(s, spyIds(s)),
-  vote: () => 'approve',
+  approveProposal: () => true,
   playCard: (s, id) => (isSpy(s, id) ? 'fail' : 'success'),
 }
 
-/** Everyone rejects every proposal → the Spies win on 5 consecutive rejects. */
+/** The table rejects every proposal → the Spies win on 5 consecutive rejects. */
 export const obstructionStrategy: Strategy = {
   proposeTeam: (s) => teamPreferring(s, []),
-  vote: () => 'reject',
+  approveProposal: () => false,
   playCard: () => 'success',
 }
 
@@ -176,7 +168,7 @@ export function randomStrategy(seed: number): Strategy {
   const rng = mulberry32(seed)
   return {
     proposeTeam: (s) => shuffle(s.players.map((p: Player) => p.id), rng).slice(0, currentTeamSize(s)),
-    vote: () => (rng() < 0.5 ? 'approve' : 'reject'),
+    approveProposal: () => rng() < 0.5,
     playCard: (s, id) => (isSpy(s, id) && rng() < 0.5 ? 'fail' : 'success'),
   }
 }

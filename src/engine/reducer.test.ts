@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { currentLeaderId, currentTeamSize, initialState, reducer } from './reducer'
-import type { Action, GameState, MissionCard, Vote } from './types'
+import type { Action, GameState, MissionCard } from './types'
 
 const NAMES7 = ['Al', 'Bo', 'Cy', 'Di', 'Ed', 'Fi', 'Gu']
 const NAMES6 = ['Al', 'Bo', 'Cy', 'Di', 'Ed', 'Fi']
@@ -32,17 +32,10 @@ function teamNoSpy(state: GameState): number[] {
   return team.map((p) => p.id)
 }
 
-function castAll(state: GameState, vote: Vote): GameState {
-  return state.players.reduce(
-    (s, p) => reducer(s, { type: 'CAST_VOTE', playerId: p.id, vote }),
-    state,
-  )
-}
-
-/** Propose `team`, approve unanimously, confirm — leaving state at 'mission'. */
+/** Propose `team` and record the table's approval — leaving state at 'mission'. */
 function approveTeam(state: GameState, team: number[]): GameState {
   const proposed = reducer(state, { type: 'PROPOSE_TEAM', team })
-  return reducer(castAll(proposed, 'approve'), { type: 'CONFIRM_VOTE' })
+  return reducer(proposed, { type: 'RESOLVE_PROPOSAL', approved: true })
 }
 
 /** Play `failers` as fail (spies only — resistance is coerced anyway) and reveal. */
@@ -95,7 +88,7 @@ describe('SETUP', () => {
     expect(currentTeamSize(state)).toBe(3) // 7 players, round 1: baseline 2 + 1
     expect(() => reducer(state, { type: 'PROPOSE_TEAM', team: [0, 1] })).toThrow()
     const proposed = reducer(state, { type: 'PROPOSE_TEAM', team: [0, 1, 2] })
-    expect(proposed.phase).toBe('vote')
+    expect(proposed.phase).toBe('proposalVote')
     expect(proposed.proposedTeam).toEqual([0, 1, 2])
   })
 })
@@ -113,51 +106,37 @@ describe('team proposal', () => {
     expect(() => reducer(state, { type: 'PROPOSE_TEAM', team: [0, 99] })).toThrow()
   })
 
-  it('advances to vote on a valid proposal', () => {
+  it('advances to the proposal-outcome screen on a valid proposal', () => {
     const state = reducer(startedGame(), { type: 'PROPOSE_TEAM', team: [0, 1] })
-    expect(state.phase).toBe('vote')
+    expect(state.phase).toBe('proposalVote')
     expect(state.proposedTeam).toEqual([0, 1])
   })
 })
 
-describe('voting', () => {
-  it('reveals the tally once everyone has voted', () => {
-    const state = castAll(reducer(startedGame(), { type: 'PROPOSE_TEAM', team: [0, 1] }), 'approve')
-    expect(state.phase).toBe('voteReveal')
-    expect(state.lastVote).toMatchObject({ approveCount: 7, rejectCount: 0, approved: true })
-  })
-
-  it('approves on a strict majority and proceeds to the mission', () => {
-    let state = reducer(startedGame(), { type: 'PROPOSE_TEAM', team: [0, 1] })
-    state = state.players.reduce(
-      (s, p) => reducer(s, { type: 'CAST_VOTE', playerId: p.id, vote: p.id < 4 ? 'approve' : 'reject' }),
-      state,
-    )
-    expect(state.lastVote!.approved).toBe(true)
-    state = reducer(state, { type: 'CONFIRM_VOTE' })
+describe('proposal outcome (one-tap RESOLVE_PROPOSAL)', () => {
+  it('an approved proposal proceeds to the mission with a clean reject streak', () => {
+    const proposed = reducer(startedGame(), { type: 'PROPOSE_TEAM', team: [0, 1] })
+    const state = reducer(proposed, { type: 'RESOLVE_PROPOSAL', approved: true })
     expect(state.phase).toBe('mission')
     expect(state.consecutiveRejects).toBe(0)
+    expect(state.missionCards).toEqual({})
   })
 
-  it('rejects on a tie, rotates the leader, and counts the rejection', () => {
+  it('a failed proposal rotates the leader and counts the rejection', () => {
     const start = reducer(startedGame(NAMES6), { type: 'PROPOSE_TEAM', team: [0, 1] })
     const leaderBefore = start.leaderIndex
-    let state = start.players.reduce(
-      (s, p) => reducer(s, { type: 'CAST_VOTE', playerId: p.id, vote: p.id < 3 ? 'approve' : 'reject' }),
-      start,
-    )
-    expect(state.lastVote!.approved).toBe(false) // 3-3 tie
-    state = reducer(state, { type: 'CONFIRM_VOTE' })
+    const state = reducer(start, { type: 'RESOLVE_PROPOSAL', approved: false })
     expect(state.phase).toBe('teamProposal')
     expect(state.consecutiveRejects).toBe(1)
     expect(state.leaderIndex).toBe((leaderBefore + 1) % 6)
+    expect(state.proposedTeam).toEqual([])
   })
 
   it('gives spies the win after 5 consecutive rejections', () => {
     let state = startedGame()
     for (let i = 0; i < 5; i++) {
       const proposed = reducer(state, { type: 'PROPOSE_TEAM', team: [0, 1] })
-      state = reducer(castAll(proposed, 'reject'), { type: 'CONFIRM_VOTE' })
+      state = reducer(proposed, { type: 'RESOLVE_PROPOSAL', approved: false })
     }
     expect(state.phase).toBe('gameOver')
     expect(state.winner).toBe('spies')
@@ -167,12 +146,18 @@ describe('voting', () => {
   it('resets the rejection streak after an approval', () => {
     let state = startedGame()
     state = reducer(
-      castAll(reducer(state, { type: 'PROPOSE_TEAM', team: [0, 1] }), 'reject'),
-      { type: 'CONFIRM_VOTE' },
+      reducer(state, { type: 'PROPOSE_TEAM', team: [0, 1] }),
+      { type: 'RESOLVE_PROPOSAL', approved: false },
     )
     expect(state.consecutiveRejects).toBe(1)
     state = approveTeam(state, [0, 1])
     expect(state.consecutiveRejects).toBe(0)
+  })
+
+  it('is a no-op outside the proposalVote phase', () => {
+    const state = startedGame() // sitting at teamProposal
+    expect(reducer(state, { type: 'RESOLVE_PROPOSAL', approved: true })).toBe(state)
+    expect(reducer(state, { type: 'RESOLVE_PROPOSAL', approved: false })).toBe(state)
   })
 })
 

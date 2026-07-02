@@ -2,16 +2,13 @@
 
 export type Role = 'resistance' | 'spy'
 
-export type Vote = 'approve' | 'reject'
-
 export type MissionCard = 'success' | 'fail'
 
 export type Phase =
   | 'setup' // entering players
   | 'roleReveal' // each player privately views their role
   | 'teamProposal' // leader selects the mission team (public)
-  | 'vote' // each player privately approves/rejects
-  | 'voteReveal' // dramatic public reveal of the vote
+  | 'proposalVote' // public one-tap record of the table's show-of-hands vote
   | 'mission' // team members privately play success/fail
   | 'missionReveal' // shuffled public reveal of the outcome
   | 'gameOver'
@@ -34,16 +31,6 @@ export interface MissionResult {
   success: boolean
 }
 
-/** Snapshot of a revealed vote, kept for the reveal screen. */
-export interface VoteRecord {
-  round: number
-  team: number[]
-  votes: Record<number, Vote>
-  approveCount: number
-  rejectCount: number
-  approved: boolean
-}
-
 export interface GameState {
   phase: Phase
   players: Player[]
@@ -61,8 +48,6 @@ export interface GameState {
 
   /** Player ids on the currently proposed team. */
   proposedTeam: number[]
-  /** Votes cast for the current proposal, keyed by player id. */
-  votes: Record<number, Vote>
   /** Cards played for the current mission, keyed by player id. */
   missionCards: Record<number, MissionCard>
 
@@ -71,8 +56,6 @@ export interface GameState {
   successes: number
   fails: number
 
-  /** Most recent revealed vote (for the voteReveal screen). */
-  lastVote: VoteRecord | null
   /** Most recent revealed mission (for the missionReveal screen). */
   lastMission: MissionResult | null
 
@@ -89,10 +72,14 @@ export type Action =
   | { type: 'START_ROUNDS' }
   /** Leader proposes a team (must match the required size). */
   | { type: 'PROPOSE_TEAM'; team: number[] }
-  /** A player casts their private vote. */
-  | { type: 'CAST_VOTE'; playerId: number; vote: Vote }
-  /** Apply the consequences of the revealed vote (approve → mission, else rotate). */
-  | { type: 'CONFIRM_VOTE' }
+  /**
+   * Record the table's proposal decision in one tap. The vote itself happens
+   * out loud — everyone gives a thumbs up/down in real life — so the phone is
+   * never passed around for voting; one person just records whether the
+   * proposal passed. Approved → mission; rejected → rotate leader (5
+   * consecutive rejects still hand the win to the spies).
+   */
+  | { type: 'RESOLVE_PROPOSAL'; approved: boolean }
   /** A team member plays their mission card (resistance is coerced to success). */
   | { type: 'PLAY_CARD'; playerId: number; card: MissionCard }
   /** Apply the mission outcome and advance (or end the game). */

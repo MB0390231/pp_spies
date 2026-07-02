@@ -122,21 +122,12 @@ export const midnightDossier: Theme = {
       leaderBadge: 'Lead',
       cta: 'Propose this team',
     },
-    vote: {
-      progress: '{done} of {total} votes in',
-      teamLabel: 'The proposed team',
-      question: 'Send them on the mission?',
-      approve: 'Approve',
-      reject: 'Reject',
-    },
-    voteReveal: {
+    proposalVote: {
       title: 'The vote',
-      revealNext: 'Reveal next',
-      approved: 'Approved',
-      rejected: 'Rejected',
-      tally: '{approve} approve · {reject} reject',
-      begin: 'Begin the mission',
-      nextLeader: 'Pass the lead',
+      teamLabel: 'The proposed team',
+      instruction: 'Vote out loud — show of hands. Then one of you records the outcome.',
+      passed: 'Proposal passed',
+      failed: 'Proposal failed',
     },
     mission: {
       progress: '{done} of {total} cards played',
@@ -177,7 +168,7 @@ export const midnightDossier: Theme = {
       playersCol: 'Players',
       roundCol: 'M{n}',
       spiesCol: 'Spies',
-      chips: { approve: 'Approve', reject: 'Reject', succeed: 'Succeed', fail: 'Fail' },
+      chips: { approve: 'Passed', reject: 'Failed', succeed: 'Succeed', fail: 'Fail' },
       goal: {
         title: 'The goal',
         body:
@@ -196,7 +187,7 @@ export const midnightDossier: Theme = {
       voting: {
         title: 'Voting',
         body:
-          'Every player votes to approve or reject the proposed team. Votes aren’t secret — once everyone has voted they’re revealed one by one, so you see exactly who approved and who rejected. A strict majority sends the team; a tie counts as a rejection and the next player takes the lead.',
+          'The table votes on the proposed team out loud — a show of hands, all at once. One player then records the outcome with a single tap: **passed** sends the team on the mission; **failed** hands the lead to the next player. Five failed proposals in a row and the Spies win.',
       },
       missions: {
         title: 'Missions',
@@ -227,14 +218,9 @@ export const midnightDossier: Theme = {
           body: 'As leader you choose the team. This mission needs 2 players — every mission calls for a set number that grows later on. Tap any 2 to send; the leader may go too. Afterwards the lead passes to the next player each mission — and every time a team is voted down — so everyone gets a turn.',
           cta: 'Propose this team',
         },
-        vote: {
-          title: 'Everyone votes',
-          body: 'Every player votes to approve or reject this team. Votes aren’t secret — once everyone has voted they’re all revealed, so you’ll see exactly who approved and who rejected. Tap Approve to send this team.',
-        },
-        voteReveal: {
-          title: 'Majority rules',
-          body: 'More approvals than rejections, so the team is sent. Careful: if proposals are rejected 5 times in a row, the Spies win — so don’t stall forever.',
-          cta: 'Begin the mission',
+        proposalVote: {
+          title: 'Vote out loud',
+          body: 'Nobody passes the phone to vote. The whole table votes on this team in the open — thumbs up or down, all at once — and any one player records the outcome. Careful: if proposals fail 5 times in a row, the Spies win. Tap Proposal passed to send this team.',
         },
         mission: {
           title: 'Play your card',
@@ -251,7 +237,7 @@ export const midnightDossier: Theme = {
           cta: 'Start a real game',
         },
       },
-      voteNudge: 'In a real game you could reject — but tap Approve to send this team and keep learning.',
+      voteNudge: 'In a real game a failed proposal hands the lead to the next player — but tap Proposal passed to send this team and keep learning.',
       notOnTeam: 'You sent {a} and {b} — you’re not on this mission, so they play their cards in secret.',
       seeResult: 'See the result',
       outroProgress: '1 of 3 missions complete',

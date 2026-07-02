@@ -107,10 +107,9 @@ maps to a surface:
 - **`roleReveal`** — eyebrow, good/bad titles and bodies, next/last CTAs.
 - **`proposal`** — leader eyebrow, `instruction` (`{count}`), `counter`
   (`{selected} {count}`), the tiny `leaderBadge` tag, CTA.
-- **`vote`** — `progress` (`{done} {total}`), team label, question,
-  approve/reject buttons (also used as the revealed row labels).
-- **`voteReveal`** — title, reveal-next, APPROVED/REJECTED verdicts, `tally`
-  (`{approve} {reject}`), begin/next-leader CTAs.
+- **`proposalVote`** — the public one-tap outcome screen: title, team label,
+  the "vote out loud, then record it" `instruction`, and the `passed`/`failed`
+  buttons. The table votes by show of hands off-device; one person records it.
 - **`mission`** — `progress` (`{done} {total}`), prompt, succeed/fail cards,
   `lockedHint` shown to good-faction players instead of the fail button.
 - **`missionReveal`** — `title` (`{round}`), success/failure verdicts,
@@ -124,7 +123,7 @@ maps to a surface:
   (goal/track/teams/voting/missions — bodies support `**bold**` spans), and
   the hard-mode footnote.
 - **`tutorial`** — `you` + `botNames` (the scripted five-player cast),
-  back/prev/next controls, eight `CoachCopy` scenes (title, body, optional
+  back/prev/next controls, seven `CoachCopy` scenes (title, body, optional
   cta), `voteNudge`, `notOnTeam` (`{a} {b}`), `seeResult`, `outroProgress`,
   `replay`.
 
@@ -211,5 +210,6 @@ Say you're building **"Release the Files"**.
   `decor.backdrop` subtle: it sits behind every screen including overlays.
 - **The lexicon is one voice.** `factions`, the role-reveal bodies, the rules
   sheet, and the tutorial coach all tell the same story — rewrite them
-  together, not piecemeal. Keep mechanics accurate (majority vote, 5 rejects,
-  the round-4 two-fails rule) even in a new fiction.
+  together, not piecemeal. Keep mechanics accurate (the out-loud proposal vote
+  recorded in one tap, 5 rejects, the round-4 two-fails rule) even in a new
+  fiction.

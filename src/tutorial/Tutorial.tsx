@@ -6,14 +6,13 @@ import type { MissionCard } from '../engine'
 import { fmt, useLexicon } from '../theme'
 import { CoachMark } from './CoachMark'
 import { FauxScoreTrack } from './FauxScoreTrack'
-import { BOT_VOTES, CAST_ROLES, SPY_COUNT, TEAM_SIZE, YOU_ID } from './script'
+import { CAST_ROLES, SPY_COUNT, TEAM_SIZE, YOU_ID } from './script'
 
 type SceneId =
   | 'intro'
   | 'role'
   | 'proposal'
-  | 'vote'
-  | 'voteReveal'
+  | 'proposalVote'
   | 'mission'
   | 'missionReveal'
   | 'outro'
@@ -22,8 +21,7 @@ const ORDER: SceneId[] = [
   'intro',
   'role',
   'proposal',
-  'vote',
-  'voteReveal',
+  'proposalVote',
   'mission',
   'missionReveal',
   'outro',
@@ -218,7 +216,7 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
                 title={coach.proposal.title}
                 cta={coach.proposal.cta}
                 ctaDisabled={selected.length !== TEAM_SIZE}
-                onCta={() => setScene('vote')}
+                onCta={() => setScene('proposalVote')}
               >
                 {coach.proposal.body}
               </CoachMark>
@@ -226,71 +224,30 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
           </div>
         )
 
-      case 'vote': {
-        // Voting is public — no handoff gate — to make clear votes aren't secret.
+      case 'proposalVote': {
+        // One public scene mirrors the real ProposalVote screen: the table votes
+        // out loud (show of hands) and one person records the outcome — the
+        // phone is never passed around for voting. "Passed" advances to the
+        // mission; "Failed" just nudges, since this scripted round must go on.
         const names = team.map((id) => playerName(id))
         return (
           <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
+            <h2 className="font-display text-3xl font-bold text-ink">{lex.proposalVote.title}</h2>
             <div className="w-full max-w-sm rounded-card border border-line bg-surface/80 p-5 shadow-card">
               <p className="font-mono text-xs uppercase tracking-label text-faint">
-                {lex.vote.teamLabel}
+                {lex.proposalVote.teamLabel}
               </p>
               <p className="mt-2 text-xl font-semibold text-ink">{names.join(', ')}</p>
             </div>
-            <p className="text-muted">{lex.vote.question}</p>
-            <div className="flex w-full max-w-sm gap-3">
-              <Button className="flex-1" onClick={() => setScene('voteReveal')}>
-                {lex.vote.approve}
-              </Button>
-              <Button variant="danger" className="flex-1" onClick={() => setVoteNudge(true)}>
-                {lex.vote.reject}
+            <p className="max-w-sm text-muted">{lex.proposalVote.instruction}</p>
+            <div className="flex w-full max-w-sm flex-col gap-3">
+              <Button onClick={() => setScene('mission')}>{lex.proposalVote.passed}</Button>
+              <Button variant="danger" onClick={() => setVoteNudge(true)}>
+                {lex.proposalVote.failed}
               </Button>
             </div>
             {voteNudge && <p className="max-w-sm text-xs text-danger">{lex.tutorial.voteNudge}</p>}
-            <CoachMark title={coach.vote.title}>{coach.vote.body}</CoachMark>
-          </div>
-        )
-      }
-
-      case 'voteReveal': {
-        // Hard-coded outcome: You + 3 bots approve, 1 bot rejects → APPROVED.
-        const votes = cast.map((p) => ({
-          name: p.name,
-          vote: p.id === YOU_ID ? ('approve' as const) : BOT_VOTES[p.id],
-        }))
-        const approve = votes.filter((v) => v.vote === 'approve').length
-        const reject = votes.length - approve
-        return (
-          <div className="flex min-h-full flex-col items-center gap-5 p-6">
-            <h2 className="font-display text-3xl font-bold text-ink">{lex.voteReveal.title}</h2>
-            <ul className="flex w-full max-w-sm flex-col gap-2">
-              {votes.map((v) => (
-                <li
-                  key={v.name}
-                  className="flex items-center justify-between rounded-field border border-line bg-surface px-4 py-3"
-                >
-                  <span className="font-semibold text-ink">{v.name}</span>
-                  <span
-                    className={`font-semibold ${v.vote === 'approve' ? 'text-accent' : 'text-danger'}`}
-                  >
-                    {v.vote === 'approve' ? `✔ ${lex.vote.approve}` : `✘ ${lex.vote.reject}`}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="font-display text-4xl font-extrabold uppercase text-accent">
-              {lex.voteReveal.approved}
-            </p>
-            <p className="font-mono text-xs uppercase tracking-label text-faint">
-              {fmt(lex.voteReveal.tally, { approve, reject })}
-            </p>
-            <CoachMark
-              title={coach.voteReveal.title}
-              cta={coach.voteReveal.cta}
-              onCta={() => setScene('mission')}
-            >
-              {coach.voteReveal.body}
-            </CoachMark>
+            <CoachMark title={coach.proposalVote.title}>{coach.proposalVote.body}</CoachMark>
           </div>
         )
       }

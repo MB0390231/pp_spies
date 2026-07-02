@@ -130,7 +130,7 @@ const oneSpyEvenRoundSabotage: Strategy = {
     const resistance = s.players.filter((p) => p.role === 'resistance').map((p) => p.id)
     return [spy, ...resistance].slice(0, size)
   },
-  vote: () => 'approve',
+  approveProposal: () => true,
   playCard: (s, id) =>
     s.players.find((p) => p.id === id)?.role === 'spy' && s.round % 2 === 0 ? 'fail' : 'success',
 }
@@ -153,7 +153,8 @@ describe('whole-game flow edges', () => {
   })
 })
 
-// --- Voting edge cases driven straight through the reducer ------------------
+// --- Proposal-outcome edge cases driven straight through the reducer --------
+// The table votes out loud; one tap records the verdict (RESOLVE_PROPOSAL).
 
 function started(n: number, seed = 1): GameState {
   const setup = reducer(initialState(), {
@@ -164,20 +165,17 @@ function started(n: number, seed = 1): GameState {
   return reducer(setup, { type: 'START_ROUNDS' })
 }
 
-describe('even-count vote ties reject', () => {
-  it.each([6, 8, 10])('a %i-player even split ties and rejects', (n) => {
+describe('recording a failed proposal', () => {
+  it.each([6, 8, 10])('a %i-player failed proposal rotates the leader and counts', (n) => {
     const size = teamSize(n, 1)
     const team = Array.from({ length: size }, (_, i) => i)
     const proposed = reducer(started(n), { type: 'PROPOSE_TEAM', team })
-    const half = n / 2
-    const voted = proposed.players.reduce(
-      (s, p) => reducer(s, { type: 'CAST_VOTE', playerId: p.id, vote: p.id < half ? 'approve' : 'reject' }),
-      proposed,
-    )
-    expect(voted.lastVote).toMatchObject({ approveCount: half, rejectCount: half, approved: false })
+    const leaderBefore = proposed.leaderIndex
 
-    const confirmed = reducer(voted, { type: 'CONFIRM_VOTE' })
-    expect(confirmed.phase).toBe('teamProposal')
-    expect(confirmed.consecutiveRejects).toBe(1)
+    const rejected = reducer(proposed, { type: 'RESOLVE_PROPOSAL', approved: false })
+    expect(rejected.phase).toBe('teamProposal')
+    expect(rejected.consecutiveRejects).toBe(1)
+    expect(rejected.leaderIndex).toBe((leaderBefore + 1) % n)
+    expect(rejected.proposedTeam).toEqual([])
   })
 })

@@ -9,11 +9,10 @@ import type { GameState, Player } from '../engine'
 import { GameOver } from '../screens/GameOver'
 import { Mission } from '../screens/Mission'
 import { MissionReveal } from '../screens/MissionReveal'
+import { ProposalVote } from '../screens/ProposalVote'
 import { RoleReveal } from '../screens/RoleReveal'
 import { Setup } from '../screens/Setup'
 import { TeamProposal } from '../screens/TeamProposal'
-import { Vote } from '../screens/Vote'
-import { VoteReveal } from '../screens/VoteReveal'
 
 export interface Scenario {
   id: string
@@ -26,7 +25,7 @@ export interface Scenario {
   /** Render the public ScoreTrack header above the screen, as the live app does. */
   showScore?: boolean
   /** Render a full-frame overlay instead of a phase Screen. */
-  overlay?: 'pause' | 'rules' | 'settings'
+  overlay?: 'pause' | 'rules' | 'settings' | 'tutorial'
 }
 
 const GATE_HINT = 'Private screen — tap the handoff to reveal what the player sees.'
@@ -87,62 +86,17 @@ export const scenarios: Scenario[] = [
     state: make({ phase: 'teamProposal', players: P5, spyCount: 2, round: 1, leaderIndex: 0 }),
   },
   {
-    id: 'vote',
-    label: 'Vote',
-    Screen: Vote,
-    note: GATE_HINT,
+    id: 'proposal-vote',
+    label: 'Proposal Vote',
+    Screen: ProposalVote,
+    note: 'Public one-tap outcome: the table votes out loud, one person records it.',
     showScore: true,
     state: make({
-      phase: 'vote',
+      phase: 'proposalVote',
       players: P5,
       spyCount: 2,
       round: 1,
       proposedTeam: [1, 3],
-      // Everyone but Eve has voted → the screen shows "4/5 voted" and hands off to Eve.
-      votes: { 0: 'approve', 1: 'approve', 2: 'reject', 3: 'approve' },
-    }),
-  },
-  {
-    id: 'vote-approved',
-    label: 'Vote Reveal — Approved',
-    Screen: VoteReveal,
-    showScore: true,
-    state: make({
-      phase: 'voteReveal',
-      players: P5,
-      spyCount: 2,
-      round: 1,
-      proposedTeam: [1, 3],
-      lastVote: {
-        round: 1,
-        team: [1, 3],
-        votes: { 0: 'approve', 1: 'approve', 2: 'reject', 3: 'approve', 4: 'reject' },
-        approveCount: 3,
-        rejectCount: 2,
-        approved: true,
-      },
-    }),
-  },
-  {
-    id: 'vote-rejected',
-    label: 'Vote Reveal — Rejected',
-    Screen: VoteReveal,
-    showScore: true,
-    state: make({
-      phase: 'voteReveal',
-      players: P5,
-      spyCount: 2,
-      round: 2,
-      consecutiveRejects: 2,
-      proposedTeam: [0, 2, 4],
-      lastVote: {
-        round: 2,
-        team: [0, 2, 4],
-        votes: { 0: 'reject', 1: 'approve', 2: 'reject', 3: 'reject', 4: 'approve' },
-        approveCount: 2,
-        rejectCount: 3,
-        approved: false,
-      },
     }),
   },
   {
@@ -228,6 +182,13 @@ export const scenarios: Scenario[] = [
     label: 'Settings Sheet',
     note: 'Opened from the gear on Setup. Theme picks here are previews only (not persisted).',
     overlay: 'settings',
+    state: make({ phase: 'setup' }),
+  },
+  {
+    id: 'tutorial',
+    label: 'Tutorial',
+    note: 'The full guided walkthrough — step forward to the one-tap proposal-vote scene.',
+    overlay: 'tutorial',
     state: make({ phase: 'setup' }),
   },
 ]

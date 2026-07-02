@@ -11,6 +11,7 @@ import { RulesOverlay } from '../components/RulesOverlay'
 import { ScoreTrack } from '../components/ScoreTrack'
 import { SettingsSheet } from '../components/SettingsSheet'
 import { GameProvider } from '../state/GameContext'
+import { Tutorial } from '../tutorial/Tutorial'
 import { scenarios } from './fixtures'
 
 export function Storybook() {
@@ -65,6 +66,8 @@ export function Storybook() {
               <RulesOverlay onClose={() => {}} />
             ) : active.overlay === 'settings' ? (
               <SettingsSheet onClose={() => {}} />
+            ) : active.overlay === 'tutorial' ? (
+              <Tutorial onExit={() => {}} />
             ) : (
               Screen && (
                 <div className="flex w-full max-w-md flex-1 flex-col">

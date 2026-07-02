@@ -10,15 +10,30 @@ import {
   type ReactNode,
 } from 'react'
 import { initialState, reducer } from '../engine'
-import type { Action, GameState } from '../engine'
+import type { Action, GameState, Phase } from '../engine'
 
 const STORAGE_KEY = 'spies:game'
+
+// Phases the current engine knows how to render. A save from an older build
+// (e.g. one parked in the removed per-player 'vote' phase) has no screen to
+// resume into, so it falls back to a fresh game instead of crashing the router.
+const KNOWN_PHASES: ReadonlySet<Phase> = new Set<Phase>([
+  'setup',
+  'roleReveal',
+  'teamProposal',
+  'proposalVote',
+  'mission',
+  'missionReveal',
+  'gameOver',
+])
 
 function load(): GameState {
   if (typeof localStorage === 'undefined') return initialState()
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as GameState) : initialState()
+    if (!raw) return initialState()
+    const saved = JSON.parse(raw) as GameState
+    return KNOWN_PHASES.has(saved.phase) ? saved : initialState()
   } catch {
     return initialState()
   }

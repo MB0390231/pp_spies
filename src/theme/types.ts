@@ -178,23 +178,17 @@ export interface Lexicon {
     leaderBadge: string
     cta: string
   }
-  vote: {
-    /** {done} {total} */
-    progress: string
-    teamLabel: string
-    question: string
-    approve: string
-    reject: string
-  }
-  voteReveal: {
+  proposalVote: {
+    /** Heading of the public proposal-outcome screen. */
     title: string
-    revealNext: string
-    approved: string
-    rejected: string
-    /** {approve} {reject} */
-    tally: string
-    begin: string
-    nextLeader: string
+    /** Label above the proposed team's names. */
+    teamLabel: string
+    /** Tells the table to vote out loud, then record the result in one tap. */
+    instruction: string
+    /** Button recording that the proposal passed (→ mission). */
+    passed: string
+    /** Button recording that the proposal failed (→ leader rotates). */
+    failed: string
   }
   mission: {
     /** {done} {total} */
@@ -262,13 +256,12 @@ export interface Lexicon {
       intro: CoachCopy
       role: CoachCopy
       proposal: CoachCopy
-      vote: CoachCopy
-      voteReveal: CoachCopy
+      proposalVote: CoachCopy
       mission: CoachCopy
       missionReveal: CoachCopy
       outro: CoachCopy
     }
-    /** Shown if the learner taps Reject in the scripted vote. */
+    /** Shown if the learner records the scripted proposal as failed. */
     voteNudge: string
     /** Shown when the learner isn't on the scripted team. {a} {b} */
     notOnTeam: string

@@ -63,7 +63,7 @@ describe('simulateGame — Round-4 two-fail rule (7+ players)', () => {
       const resistance = s.players.filter((p) => p.role === 'resistance').map((p) => p.id)
       return [spy, ...resistance].slice(0, size)
     },
-    vote: () => 'approve',
+    approveProposal: () => true,
     playCard: (s, id) => {
       const spy = s.players.find((p) => p.id === id)?.role === 'spy'
       return spy && s.round % 2 === 0 ? 'fail' : 'success'

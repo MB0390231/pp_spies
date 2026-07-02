@@ -7,7 +7,6 @@ import {
   missionFails,
   spyCount,
   teamSize,
-  voteApproved,
 } from './rules'
 
 describe('spyCount', () => {
@@ -117,14 +116,6 @@ describe('buildRoles', () => {
 
   it('is deterministic for a given seed', () => {
     expect(buildRoles(7, mulberry32(42))).toEqual(buildRoles(7, mulberry32(42)))
-  })
-})
-
-describe('voteApproved', () => {
-  it('passes only on a strict majority', () => {
-    expect(voteApproved(3, 2)).toBe(true)
-    expect(voteApproved(2, 2)).toBe(false) // tie rejects
-    expect(voteApproved(2, 3)).toBe(false)
   })
 })
 

@@ -10,9 +10,8 @@ import {
   missionFails,
   spyCount,
   teamSize,
-  voteApproved,
 } from './rules'
-import type { Action, GameState, MissionResult, Player, VoteRecord } from './types'
+import type { Action, GameState, MissionResult, Player } from './types'
 
 export function initialState(): GameState {
   return {
@@ -24,12 +23,10 @@ export function initialState(): GameState {
     leaderIndex: 0,
     consecutiveRejects: 0,
     proposedTeam: [],
-    votes: {},
     missionCards: {},
     results: [],
     successes: 0,
     fails: 0,
-    lastVote: null,
     lastMission: null,
     winner: null,
   }
@@ -96,41 +93,16 @@ export function reducer(state: GameState, action: Action): GameState {
       return {
         ...state,
         proposedTeam: [...action.team],
-        votes: {},
-        phase: 'vote',
+        phase: 'proposalVote',
       }
     }
 
-    case 'CAST_VOTE': {
-      if (state.phase !== 'vote') return state
-      const known = state.players.some((p) => p.id === action.playerId)
-      if (!known) throw new Error(`Unknown player: ${action.playerId}`)
-      const votes = { ...state.votes, [action.playerId]: action.vote }
-      if (Object.keys(votes).length < state.players.length) {
-        return { ...state, votes }
-      }
-      // All votes are in — compute the reveal.
-      let approveCount = 0
-      let rejectCount = 0
-      for (const v of Object.values(votes)) {
-        if (v === 'approve') approveCount++
-        else rejectCount++
-      }
-      const approved = voteApproved(approveCount, rejectCount)
-      const lastVote: VoteRecord = {
-        round: state.round,
-        team: [...state.proposedTeam],
-        votes,
-        approveCount,
-        rejectCount,
-        approved,
-      }
-      return { ...state, votes, lastVote, phase: 'voteReveal' }
-    }
-
-    case 'CONFIRM_VOTE': {
-      if (state.phase !== 'voteReveal' || !state.lastVote) return state
-      if (state.lastVote.approved) {
+    case 'RESOLVE_PROPOSAL': {
+      // The actual vote happens off-device: the table gives a show of hands
+      // and one person records the outcome. No per-player ballots, no phone
+      // passing — this single action carries the whole decision.
+      if (state.phase !== 'proposalVote') return state
+      if (action.approved) {
         return {
           ...state,
           consecutiveRejects: 0,
@@ -152,7 +124,6 @@ export function reducer(state: GameState, action: Action): GameState {
         consecutiveRejects,
         leaderIndex: nextLeaderIndex(state),
         proposedTeam: [],
-        votes: {},
         phase: 'teamProposal',
       }
     }
@@ -205,7 +176,6 @@ export function reducer(state: GameState, action: Action): GameState {
         leaderIndex: nextLeaderIndex(state),
         consecutiveRejects: 0,
         proposedTeam: [],
-        votes: {},
         missionCards: {},
         phase: 'teamProposal',
       }

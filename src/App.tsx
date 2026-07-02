@@ -11,10 +11,9 @@ import { GameOver } from './screens/GameOver'
 import { Mission } from './screens/Mission'
 import { MissionReveal } from './screens/MissionReveal'
 import { RoleReveal } from './screens/RoleReveal'
+import { ProposalVote } from './screens/ProposalVote'
 import { Setup } from './screens/Setup'
 import { TeamProposal } from './screens/TeamProposal'
-import { Vote } from './screens/Vote'
-import { VoteReveal } from './screens/VoteReveal'
 import { useGame } from './state/GameContext'
 import { usePaused } from './state/usePaused'
 import { useLexicon } from './theme'
@@ -23,8 +22,7 @@ const SCREENS: Record<Phase, ComponentType> = {
   setup: Setup,
   roleReveal: RoleReveal,
   teamProposal: TeamProposal,
-  vote: Vote,
-  voteReveal: VoteReveal,
+  proposalVote: ProposalVote,
   mission: Mission,
   missionReveal: MissionReveal,
   gameOver: GameOver,
@@ -33,8 +31,7 @@ const SCREENS: Record<Phase, ComponentType> = {
 // Phases that show the public score header.
 const IN_GAME: ReadonlySet<Phase> = new Set<Phase>([
   'teamProposal',
-  'vote',
-  'voteReveal',
+  'proposalVote',
   'mission',
   'missionReveal',
 ])
@@ -43,8 +40,7 @@ const IN_GAME: ReadonlySet<Phase> = new Set<Phase>([
 const PAUSABLE: ReadonlySet<Phase> = new Set<Phase>([
   'roleReveal',
   'teamProposal',
-  'vote',
-  'voteReveal',
+  'proposalVote',
   'mission',
   'missionReveal',
 ])

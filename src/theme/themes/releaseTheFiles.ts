@@ -1,14 +1,14 @@
 // "Release the Files": a political-intrigue reskin. Manila folders, typed
-// pages, records-stamp blue for the honest side, stamp red for the cover-up,
-// and a deadpan legislative-procedure voice — gavels, roll calls, ayes and
-// nays. Everyone is a politician; a few are quietly on the payroll.
+// pages, records-stamp blue for the Honest side, stamp red for the cover-up,
+// and a deadpan legislative-procedure voice — gavels, shows of hands, ayes
+// and nays. Everyone is a politician; a few are quietly on the payroll.
 
 import type { Theme } from '../types'
 
 export const releaseTheFiles: Theme = {
   id: 'release-the-files',
   name: 'Release the Files',
-  blurb: 'Manila folders, roll-call votes, shredders humming.',
+  blurb: 'Manila folders, shows of hands, redaction stamps thudding.',
 
   tokens: {
     colors: {
@@ -25,7 +25,7 @@ export const releaseTheFiles: Theme = {
       // Records-stamp blue: the release, the aye, the honest side.
       accent: '31 87 156',
       accentInk: '243 248 255',
-      // Stamp-pad red: the shredder, the nay, the cover-up.
+      // Stamp-pad red: the CLASSIFIED stamp, the nay, the cover-up.
       danger: '178 45 38',
       dangerInk: '253 242 238',
       focus: '24 106 199',
@@ -79,11 +79,11 @@ export const releaseTheFiles: Theme = {
       name: 'Release the Files',
       icon: '🗂️',
       subtitle: 'Pass & Play',
-      tagline: 'The truth is in triplicate. Someone keeps shredding it.',
+      tagline: 'The truth is in triplicate. Someone keeps it classified.',
     },
     factions: {
-      good: { name: 'The Reformers', member: 'Reformer' },
-      bad: { name: 'The Machine', member: 'Fixer' },
+      good: { name: 'The Honest Politicians', member: 'Honest' },
+      bad: { name: 'The Corrupt Politicians', member: 'Corrupt' },
     },
     scoreTrack: {
       round: 'File {round} / {total}',
@@ -120,12 +120,12 @@ export const releaseTheFiles: Theme = {
     },
     roleReveal: {
       eyebrow: 'Sealed — your eyes only',
-      goodTitle: 'Reformer',
-      badTitle: 'A Fixer',
+      goodTitle: 'Honest',
+      badTitle: 'Corrupt',
       goodBody:
         'You’re clean. Get every file into daylight — and watch your colleagues. Someone at this table is on the payroll.',
       badBody:
-        'You’re bought. Keep the files buried without leaving fingerprints. You are not the only one on the payroll.',
+        'You’re bought. Keep the files classified without leaving fingerprints. You are not the only one on the payroll.',
       next: 'Understood — pass it on',
       last: 'Everyone’s sworn in — begin',
     },
@@ -136,43 +136,34 @@ export const releaseTheFiles: Theme = {
       leaderBadge: 'Chair',
       cta: 'Move to appoint',
     },
-    vote: {
-      progress: '{done} of {total} ballots in',
+    proposalVote: {
+      title: 'The floor votes',
       teamLabel: 'The proposed committee',
-      question: 'Trust them with the file?',
-      approve: 'Aye',
-      reject: 'Nay',
-    },
-    voteReveal: {
-      title: 'Roll call',
-      revealNext: 'Read the next ballot',
-      approved: 'Motion carries',
-      rejected: 'Motion fails',
-      tally: '{approve} aye · {reject} nay',
-      begin: 'Open the file',
-      nextLeader: 'Pass the gavel',
+      instruction: 'Ayes and nays by show of hands — then someone record the result.',
+      passed: 'Motion carries',
+      failed: 'Motion fails',
     },
     mission: {
       progress: '{done} of {total} copies handled',
       prompt: 'You hold a copy of the file',
       succeed: 'Release it',
-      fail: 'Shred it — bury the story',
-      lockedHint: 'Reformers can only release. Send it to the presses.',
+      fail: 'Classify it — keep it confidential',
+      lockedHint: 'The Honest can only release. Send it to the presses.',
     },
     missionReveal: {
       title: 'File {round}',
       success: 'Released',
-      failure: 'Buried',
-      failsOne: '1 copy shredded',
-      failsMany: '{count} copies shredded',
-      neededNote: 'this file takes {needed} shreds to bury',
+      failure: 'Classified',
+      failsOne: '1 copy classified',
+      failsMany: '{count} copies classified',
+      neededNote: 'this file needs {needed} classified copies to stay confidential',
       continue: 'Next order of business',
     },
     gameOver: {
       eyebrow: 'Session adjourned',
       goodWins: 'The files are out',
       badWins: 'The cover-up holds',
-      tally: '{successes} released · {fails} buried',
+      tally: '{successes} released · {fails} classified',
       rolesLabel: 'For the record',
       playAgain: 'Reconvene',
     },
@@ -190,17 +181,17 @@ export const releaseTheFiles: Theme = {
       close: 'Close',
       playersCol: 'Seats',
       roundCol: 'F{n}',
-      spiesCol: 'Fixers',
-      chips: { approve: 'Aye', reject: 'Nay', succeed: 'Release', fail: 'Shred' },
+      spiesCol: 'Corrupt',
+      chips: { approve: 'Carries', reject: 'Fails', succeed: 'Release', fail: 'Classify' },
       goal: {
         title: 'The goal',
         body:
-          'The Reformers win by getting **3 files released**. The Machine wins once **3 files are buried** — or when **5 committees in a row are voted down**. A few politicians are secretly Fixers on the Machine’s payroll; everyone else is a Reformer.',
+          'The Honest Politicians win by getting **3 files released**. The Corrupt Politicians win once **3 files are classified** — or when **5 committees in a row are voted down**. A few politicians are secretly Corrupt and on the payroll; everyone else is Honest.',
       },
       track: {
         title: 'The docket (top of the screen)',
         body:
-          'The five bars across the top are the files. Each fills **blue** when its file is released and **red** when it’s buried; the outlined one is the file on the table now. The **Blocked** counter beside it tracks committees voted down in a row — it turns red at 3, and at 5 the Machine wins outright.',
+          'The five bars across the top are the files. Each fills **blue** when its file is released and **red** when it’s classified; the outlined one is the file on the table now. The **Blocked** counter beside it tracks committees voted down in a row — it turns red at 3, and at 5 the Corrupt Politicians win outright.',
       },
       teams: {
         title: 'Committees',
@@ -210,12 +201,12 @@ export const releaseTheFiles: Theme = {
       voting: {
         title: 'The floor vote',
         body:
-          'Every politician votes Aye or Nay on the proposed committee. Ballots aren’t secret — once everyone has voted they’re read out one by one, so you see exactly who backed it and who blocked it. A strict majority carries the motion; a tie counts as a Nay and the gavel moves on.',
+          'The whole floor votes on the proposed committee out loud — ayes and nays by show of hands, no passing the folder. One politician then records the result: **Motion carries** seats the committee; **Motion fails** blocks it and the gavel moves on. Five blocked committees in a row and the Corrupt Politicians win.',
       },
       missions: {
         title: 'Handling the file',
         body:
-          'Each appointee secretly decides what happens to their copy. The copies are shuffled before they’re shown, so nobody knows who did what. Reformers can only **Release**; only Fixers may **Shred**. One shredded copy buries the whole file — except **file 4 with 7 or more players**, which takes two.',
+          'Each appointee secretly decides what happens to their copy. The copies are shuffled before they’re shown, so nobody knows who did what. The Honest can only **Release**; only the Corrupt may **Classify**. One classified copy keeps the whole file confidential — except **file 4 with 7 or more players**, which takes two.',
       },
       hardModeNote: 'Hard mode: files 1 & 2 each seat one extra committee member.',
     },
@@ -229,13 +220,13 @@ export const releaseTheFiles: Theme = {
         intro: {
           title: 'How to play',
           body:
-            'Release the Files is a hidden-role game for 5–13 politicians sharing one phone. You’ll walk one file through the chamber as a Reformer — and get it released.',
+            'Release the Files is a hidden-role game for 5–13 politicians sharing one phone. You’ll walk one file through the chamber as an Honest politician — and get it released.',
           cta: 'Start',
         },
         role: {
           title: 'Roles are sealed',
           body:
-            'Each politician privately checks their role behind a “hand the folder” screen, so nobody sees anyone else’s. You are a Reformer — but 2 of the 5 at this table are Fixers on the payroll.',
+            'Each politician privately checks their role behind a “hand the folder” screen, so nobody sees anyone else’s. You are Honest — but 2 of the 5 at this table are Corrupt and on the payroll.',
           cta: 'Got it',
         },
         proposal: {
@@ -244,36 +235,30 @@ export const releaseTheFiles: Theme = {
             'As Chair, you appoint the committee. This file needs 2 politicians — every file calls for a set number that grows later on. Tap any 2 to appoint; the Chair may serve too. Afterwards the gavel passes to the next politician for each file — and every time a committee is voted down — so everyone gets a turn.',
           cta: 'Move to appoint',
         },
-        vote: {
+        proposalVote: {
           title: 'The floor votes',
           body:
-            'Every politician votes Aye or Nay on this committee. Ballots aren’t secret — once everyone has voted they’re all read out, so you’ll see exactly who backed it. Tap Aye to seat this committee.',
-        },
-        voteReveal: {
-          title: 'Majority carries',
-          body:
-            'More Ayes than Nays, so the committee is seated. Careful: if 5 committees in a row are voted down, the Machine wins — so don’t stall forever.',
-          cta: 'Open the file',
+            'Nobody passes the folder to vote. The whole chamber votes on this committee out loud — ayes and nays by show of hands — and any one politician records the result. Careful: if 5 committees in a row are voted down, the Corrupt Politicians win. Tap Motion carries to seat this committee.',
         },
         mission: {
           title: 'Handle your copy',
           body:
-            'Each appointee secretly decides what happens to their copy of the file. Reformers can only Release — only Fixers can choose to Shred. Tap Release.',
+            'Each appointee secretly decides what happens to their copy of the file. The Honest can only Release — only the Corrupt can choose to Classify. Tap Release.',
         },
         missionReveal: {
           title: 'Copies are anonymous',
           body:
-            'The copies are shuffled before they’re shown, so nobody knows who did what — that’s how Fixers stay hidden. No shredded copies here, so the file is out!',
+            'The copies are shuffled before they’re shown, so nobody knows who did what — that’s how the Corrupt stay hidden. No classified copies here, so the file is out!',
           cta: 'Proceed',
         },
         outro: {
           title: 'That’s the loop',
           body:
-            'The Reformers win by releasing 3 files. The Machine wins once 3 files are buried — or 5 committees in a row are voted down. (One twist: file 4 takes 2 shredded copies to bury when 7+ are playing.) You’re ready.',
+            'The Honest Politicians win by releasing 3 files. The Corrupt Politicians win once 3 files are classified — or 5 committees in a row are voted down. (One twist: file 4 takes 2 classified copies to stay confidential when 7+ are playing.) You’re ready.',
           cta: 'Start a real session',
         },
       },
-      voteNudge: 'In a real game you could vote Nay — but tap Aye to seat this committee and keep learning.',
+      voteNudge: 'In a real session a failed motion passes the gavel to the next politician — but tap Motion carries to seat this committee and keep learning.',
       notOnTeam: 'You appointed {a} and {b} — you’re not on this committee, so they handle their copies in private.',
       seeResult: 'See the outcome',
       outroProgress: '1 of 3 files released',

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Phase 1 MVP is **playable end-to-end**. The pure engine (`src/engine/`, 33 passing tests), the `localStorage`-backed context (`src/state/`), all eight phase screens (`src/screens/`), shared components (`src/components/` — `PassPhoneGate`, `Button`, `ScoreTrack`), and the phase-router `App.tsx` are built. `npm run dev`, `build`, `type-check`, and `test` all pass. Remaining work is Phase 2/3 polish from the README roadmap (animations, tutorial, a11y, PWA, stats, house rules).
+Phase 1 MVP is **playable end-to-end**. The pure engine (`src/engine/`, 89 passing tests), the `localStorage`-backed context (`src/state/`), all seven phase screens (`src/screens/`), shared components (`src/components/` — `PassPhoneGate`, `Button`, `ScoreTrack`), and the phase-router `App.tsx` are built. `npm run dev`, `build`, `type-check`, and `test` all pass. Remaining work is Phase 2/3 polish from the README roadmap (animations, tutorial, a11y, PWA, stats, house rules).
 
 ## What this is
 
@@ -34,16 +34,16 @@ The core idea: the game rules are a body of **pure, deterministic functions** ma
 
 - **`src/engine/`** — the heart of the app. Framework-agnostic pure functions, **no React imports**. `(state, action) → nextState`. This is `rules.ts` (spy counts, team sizes, win conditions, the Round-4 rule), `reducer.ts` (the reducer), `types.ts` (Game/Player/Round/Phase types), and `random.ts` (seeded PRNG + shuffle). `index.ts` is the barrel. Keep this importable and unit-testable in isolation; this is where the most valuable tests live.
   - **Randomness stays out of the reducer.** The reducer never calls `Math.random()` — it would break determinism. Randomness enters *only* via the `seed` on the `SETUP` action (used for role assignment and first-leader choice). Generate the seed at the call site (`Date.now()` in `App.tsx`) and pass it in. This is what makes the whole engine replayable and testable.
-  - **The reducer is a strict state machine.** Each action is a no-op unless `state.phase` matches. The vote and mission flows are two-step: `CAST_VOTE`/`PLAY_CARD` accumulate private inputs and auto-transition to a `*Reveal` phase once everyone has acted; a follow-up `CONFIRM_VOTE`/`CONFIRM_MISSION` applies consequences and advances. Resistance fail cards are coerced to success inside `PLAY_CARD`.
+  - **The reducer is a strict state machine.** Each action is a no-op unless `state.phase` matches. The proposal outcome is a single public step: after `PROPOSE_TEAM`, one `RESOLVE_PROPOSAL` (`{ approved }`) records the table's show-of-hands vote and either starts the mission (approved) or rotates the leader (rejected; 5 consecutive rejects = Spies win). The mission flow is two-step: `PLAY_CARD` accumulates private cards and auto-transitions to `missionReveal` once everyone has acted; a follow-up `CONFIRM_MISSION` applies the outcome and advances. Resistance fail cards are coerced to success inside `PLAY_CARD`.
 - **`src/state/`** — React context/provider wrapping the reducer + `localStorage` persistence. Persist the full game state after **every** action so a refresh or screen-lock resumes mid-game.
-- **`src/screens/`** — one component per game phase (Setup, RoleReveal, TeamProposal, Vote, VoteReveal, Mission, MissionReveal, GameOver). Screens are dumb: they read `state` and `dispatch` actions; the engine owns all transitions. `App.tsx` maps `state.phase → screen`.
-  - **Per-player private screens derive "whose turn" from state, not local counters.** Vote and Mission find the next actor as the first player not yet in `state.votes` / `state.missionCards`, and remount `PassPhoneGate` with `key={player.id}` so the handoff resets between players. RoleReveal is the exception — roles aren't stored per-action, so it keeps a local `index`.
+- **`src/screens/`** — one component per game phase (Setup, RoleReveal, TeamProposal, ProposalVote, Mission, MissionReveal, GameOver). Screens are dumb: they read `state` and `dispatch` actions; the engine owns all transitions. `App.tsx` maps `state.phase → screen`.
+  - **Per-player private screens derive "whose turn" from state, not local counters.** Mission finds the next actor as the first player not yet in `state.missionCards`, and remounts `PassPhoneGate` with `key={player.id}` so the handoff resets between players. RoleReveal is the exception — roles aren't stored per-action, so it keeps a local `index`. ProposalVote is public (no handoff): one person taps Passed/Failed, dispatching a single `RESOLVE_PROPOSAL`.
 - **`src/components/`** — shared UI: `PassPhoneGate` (the secrecy primitive — never renders children until the named player taps), `Button`, `ScoreTrack`.
 
 ### Two invariants that are easy to get wrong
 
-1. **Handoff gating for secrecy.** Every private view (role reveal, voting, mission card play) must render *behind* a `PassPhoneGate` — a "Pass the phone to [name]" screen that the named player taps to confirm. Nothing private should render until that confirmation. Public moments (team proposal, vote reveal, mission outcome, game over) are shown openly.
-2. **Anonymous reveals.** Votes and mission cards must be **shuffled before display** so card/reveal order never leaks who played what.
+1. **Handoff gating for secrecy.** Every private view (role reveal, mission card play) must render *behind* a `PassPhoneGate` — a "Pass the phone to [name]" screen that the named player taps to confirm. Nothing private should render until that confirmation. Public moments (team proposal, the proposal vote, mission outcome, game over) are shown openly.
+2. **Anonymous reveals.** Mission cards must be **shuffled before display** so reveal order never leaks who played what.
 
 ## Game rules (the spec to encode in `engine/`)
 
@@ -65,9 +65,9 @@ These exact numbers are the source of truth — get them into `rules.ts` and cov
 - Resistance wins after **3 successful missions**.
 - Spies win after **3 failed missions**, *or* after **5 consecutive rejected team proposals**.
 
-**Round flow:** Team Proposal (public) → Vote (private per player → public one-by-one reveal; majority approve proceeds, reject rotates leader, 5 consecutive rejects = Spies win) → Mission (private per team member → shuffled public reveal; Resistance is locked to Succeed, Spies may Fail).
+**Round flow:** Team Proposal (public) → Proposal Vote (public: the table votes out loud by show of hands and one person taps Passed/Failed; passed proceeds, failed rotates leader, 5 consecutive rejects = Spies win) → Mission (private per team member → shuffled public reveal; Resistance is locked to Succeed, Spies may Fail).
 
-**State machine:** SETUP → ROLE REVEAL → loop[ TEAM PROPOSAL → VOTE → (approved → MISSION → check win) | (rejected → rotate leader) ] → GAME OVER.
+**State machine:** SETUP → ROLE REVEAL → loop[ TEAM PROPOSAL → PROPOSAL VOTE → (passed → MISSION → check win) | (failed → rotate leader) ] → GAME OVER.
 
 ## Build order (from the README roadmap)
 
