@@ -15,6 +15,7 @@ import { ScoreTrack } from '../components/ScoreTrack'
 import { SettingsSheet } from '../components/SettingsSheet'
 import { GameProvider } from '../state/GameContext'
 import { Tutorial } from '../tutorial/Tutorial'
+import { AiHarness, aiScenarios } from './aiFixtures'
 import { scenarios } from './fixtures'
 import { HostJoinStage, hostJoinScenarios } from './hostJoinFixtures'
 import { PartyStage, partyScenarios } from './partyFixtures'
@@ -69,7 +70,8 @@ export function Storybook() {
   const active = scenarios.find((s) => s.id === activeId)
   const activeParty = partyScenarios.find((s) => s.id === activeId)
   const activeHostJoin = hostJoinScenarios.find((s) => s.id === activeId)
-  const current = active ?? activeParty ?? activeHostJoin ?? scenarios[0]!
+  const activeAi = aiScenarios.find((s) => s.id === activeId)
+  const current = active ?? activeParty ?? activeHostJoin ?? activeAi ?? scenarios[0]!
   const Screen = active?.Screen
 
   return (
@@ -96,6 +98,12 @@ export function Storybook() {
           activeId={activeId}
           onSelect={select}
         />
+        <SidebarSection
+          title="AI Mode (dev)"
+          items={aiScenarios}
+          activeId={activeId}
+          onSelect={select}
+        />
       </nav>
 
       <main className="flex flex-1 flex-col items-center gap-4 overflow-y-auto p-8">
@@ -104,7 +112,9 @@ export function Storybook() {
           {current.note && <p className="mt-1 text-xs text-muted">{current.note}</p>}
         </div>
 
-        {activeHostJoin ? (
+        {activeAi ? (
+          <AiHarness key={`${activeAi.id}:${selectNonce}`} scenarioId={activeAi.id} resetNonce={selectNonce} />
+        ) : activeHostJoin ? (
           <HostJoinStage key={`${activeHostJoin.id}:${selectNonce}`} scenario={activeHostJoin} />
         ) : activeParty ? (
           <PartyStage key={`${activeParty.id}:${selectNonce}`} scenario={activeParty} />
