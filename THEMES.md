@@ -112,11 +112,13 @@ maps to a surface:
   buttons. The table votes by show of hands off-device; one person records it.
 - **`mission`** — `progress` (`{done} {total}`), prompt, succeed/fail cards,
   `lockedHint` shown to good-faction players instead of the fail button.
-- **`missionReveal`** — `title` (`{round}`), success/failure verdicts,
-  `failsOne`, `failsMany` (`{count}`, also used for zero), `neededNote`
-  (`{needed}`), continue.
+- **`missionReveal`** — `title` (`{round}`), the pre-reveal holding line
+  `allIn` and the `showResults` button (cards stay face-down until it's
+  tapped), success/failure verdicts, `failsOne`, `failsMany` (`{count}`, also
+  used for zero), `neededNote` (`{needed}`), continue.
 - **`gameOver`** — eyebrow, both win headlines, `tally`
-  (`{successes} {fails}`), roles label, play-again.
+  (`{successes} {fails}`), roles label, `guessHint` (nudge the table to guess
+  before revealing), the per-player `reveal` button, `revealAll`, play-again.
 - **`pause`** — title, body, resume, view rules, quit, quit-confirm, cancel.
 - **`rules`** — the quick-reference sheet: title, close, table column headers
   (`roundCol` takes `{n}`), the four chips, five `RuleSection`s

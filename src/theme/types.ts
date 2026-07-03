@@ -202,6 +202,10 @@ export interface Lexicon {
   missionReveal: {
     /** {round} */
     title: string
+    /** Pre-reveal holding line: everyone has acted, results are sealed. */
+    allIn: string
+    /** Button that flips the sealed cards face-up. */
+    showResults: string
     success: string
     failure: string
     failsOne: string
@@ -218,6 +222,12 @@ export interface Lexicon {
     /** {successes} {fails} */
     tally: string
     rolesLabel: string
+    /** Hint under the roles label: guess each player before revealing. */
+    guessHint: string
+    /** Per-player button that reveals that one player's role. */
+    reveal: string
+    /** Affordance that reveals every remaining hidden role at once. */
+    revealAll: string
     playAgain: string
   }
   pause: {

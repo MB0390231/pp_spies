@@ -152,6 +152,8 @@ export const releaseTheFiles: Theme = {
     },
     missionReveal: {
       title: 'File {round}',
+      allIn: 'All copies are in. The record is sealed until read.',
+      showResults: 'Read the findings',
       success: 'Released',
       failure: 'Classified',
       failsOne: '1 copy classified',
@@ -165,6 +167,9 @@ export const releaseTheFiles: Theme = {
       badWins: 'The cover-up holds',
       tally: '{successes} released · {fails} classified',
       rolesLabel: 'For the record',
+      guessHint: 'Guess who was on the payroll, then unseal each name.',
+      reveal: 'Unseal',
+      revealAll: 'Unseal all',
       playAgain: 'Reconvene',
     },
     pause: {

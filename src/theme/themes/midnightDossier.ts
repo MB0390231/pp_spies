@@ -138,6 +138,8 @@ export const midnightDossier: Theme = {
     },
     missionReveal: {
       title: 'Mission {round}',
+      allIn: 'All cards are in. No one saw who played what.',
+      showResults: 'Show results',
       success: 'Success',
       failure: 'Failed',
       failsOne: '1 fail card played',
@@ -151,6 +153,9 @@ export const midnightDossier: Theme = {
       badWins: 'Spies win',
       tally: '{successes} succeeded · {fails} failed',
       rolesLabel: 'The roles were',
+      guessHint: 'Call each player’s allegiance out loud, then reveal.',
+      reveal: 'Reveal',
+      revealAll: 'Reveal all',
       playAgain: 'Play again',
     },
     pause: {
