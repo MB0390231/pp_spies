@@ -6,7 +6,7 @@ import { useGame } from '../state/GameContext'
 import { fmt, useLexicon, useTheme } from '../theme'
 
 /** Public screen: choose player count and enter names, then assign roles. */
-export function Setup({ onHowToPlay }: { onHowToPlay?: () => void }) {
+export function Setup({ onHowToPlay, onBack }: { onHowToPlay?: () => void; onBack?: () => void }) {
   const { dispatch } = useGame()
   const lex = useLexicon()
   // Hard mode lives in settings (ThemeContext), not local state, so it sticks
@@ -30,6 +30,15 @@ export function Setup({ onHowToPlay }: { onHowToPlay?: () => void }) {
 
   return (
     <div className="relative flex min-h-full animate-rise flex-col items-center gap-6 p-6 pt-20">
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="absolute left-3 top-3 rounded-control border border-line bg-surface/80 px-4 py-2.5 font-mono text-xs uppercase tracking-label text-muted transition duration-fast ease-theme hover:border-line-strong hover:text-ink active:scale-95"
+        >
+          ← {lex.menu.back}
+        </button>
+      )}
       <button
         type="button"
         aria-label={lex.setup.settings}

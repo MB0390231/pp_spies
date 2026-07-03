@@ -58,7 +58,7 @@ function TopBarButton({ label, onClick }: { label: string; onClick: () => void }
   )
 }
 
-export default function App() {
+export default function App({ onExitToMenu }: { onExitToMenu?: () => void }) {
   const { state, dispatch } = useGame()
   const lex = useLexicon()
   const [tutorialOpen, setTutorialOpen] = useState(false)
@@ -83,7 +83,7 @@ export default function App() {
       {IN_GAME.has(state.phase) && <ScoreTrack state={state} />}
       <main className="flex w-full max-w-md flex-1 flex-col">
         {state.phase === 'setup' ? (
-          <Setup onHowToPlay={() => setTutorialOpen(true)} />
+          <Setup onHowToPlay={() => setTutorialOpen(true)} onBack={onExitToMenu} />
         ) : (
           <Screen />
         )}

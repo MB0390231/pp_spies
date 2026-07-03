@@ -120,6 +120,135 @@ export interface Lexicon {
     /** e.g. { name: 'The Spies', member: 'Spy' } */
     bad: { name: string; member: string }
   }
+  menu: {
+    /** Card for the single-device mode on the main menu. */
+    passPlay: { title: string; body: string }
+    /** Card for the networked big-screen mode on the main menu. */
+    party: { title: string; body: string }
+    /** Card for the phones-only networked mode on the main menu. */
+    hostJoin: { title: string; body: string }
+    /** Back-to-menu affordance shown on mode landing screens. */
+    back: string
+  }
+  /** Networked play (Party Mode; reused by Host & Join later). */
+  party: {
+    chooser: {
+      title: string
+      subtitle: string
+      /** Use this device as the shared big screen. */
+      hostCta: string
+      hostBody: string
+      /** Join from this phone with a room code. */
+      joinCta: string
+      joinBody: string
+      /** Shown when Supabase env vars are missing. */
+      notConfigured: string
+    }
+    /** Big-screen copy (the host display). */
+    host: {
+      /** Label above the join code. */
+      roomCode: string
+      /** How to join. {url} */
+      joinHint: string
+      /** {count} */
+      players: string
+      /** {min} */
+      needPlayers: string
+      start: string
+      /** Role phase headline on the big screen. */
+      roleTitle: string
+      roleBody: string
+      /** {ready} {total} */
+      roleReady: string
+      begin: string
+      /** {name} */
+      proposalWaiting: string
+      /** {count} {name} */
+      proposalHint: string
+      voteTitle: string
+      /** {done} {total} */
+      voteProgress: string
+      /** All ballots are in; awaiting the host's reveal. */
+      voteLocked: string
+      /** The host-triggered flip. */
+      revealVotes: string
+      votePassed: string
+      voteFailed: string
+      continue: string
+      /** {done} {total} */
+      missionProgress: string
+      missionHint: string
+      /** Label above the still-to-act names during vote/mission. */
+      waitingOn: string
+      /** Returns everyone to the lobby with seats kept. */
+      playAgain: string
+      closeRoom: string
+    }
+    /** Phone copy (the player controller). */
+    player: {
+      joinTitle: string
+      codeLabel: string
+      codePlaceholder: string
+      nameLabel: string
+      namePlaceholder: string
+      joinCta: string
+      joining: string
+      notFound: string
+      /** Shown when a code belongs to the OTHER networked mode's room. */
+      wrongMode: string
+      full: string
+      inProgress: string
+      /** Seated in the lobby. {name} */
+      lobby: string
+      /** Tap-to-peek at your own role. */
+      viewRole: string
+      hideRole: string
+      /** Ack: I've read my role. */
+      ready: string
+      waitingRoles: string
+      /** Label above the fellow-spy names on the spy's role card. */
+      fellowSpies: string
+      /** Shown to a lone spy (no fellows). */
+      soloSpy: string
+      /** {name} */
+      waitingForLeader: string
+      voteQuestion: string
+      approve: string
+      reject: string
+      voteLocked: string
+      /** Label above the still-to-act names, on the phone. */
+      waitingOn: string
+      /** Generic "look at the shared screen" line. */
+      watch: string
+      cardPlayed: string
+      notOnMission: string
+      leave: string
+      /** Shown when the host adjourns the room. */
+      sessionEnded: string
+      /** Return-to-menu button after the session ends. */
+      backToMenu: string
+    }
+    /** Host & Join (phones-only): every phone shows the board; one hosts. */
+    hostJoin: {
+      title: string
+      subtitle: string
+      /** Chooser card: host a game on this phone. */
+      hostCta: string
+      hostBody: string
+      /** Chooser card: join a game from this phone. */
+      joinCta: string
+      joinBody: string
+      /** Host name-entry screen. */
+      hostTitle: string
+      hostSetupBody: string
+      /** Button that creates the room and seats the host. */
+      createCta: string
+      /** Line on the host lobby telling players how to join. */
+      lobbyShare: string
+      /** Small tag marking the host's own phone. */
+      hostTag: string
+    }
+  }
   scoreTrack: {
     /** {round} {total} */
     round: string
