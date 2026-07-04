@@ -4,6 +4,7 @@
 import { mulberry32 } from './random'
 import {
   MAX_REJECTS,
+  MISSIONS,
   MISSIONS_TO_WIN,
   buildRoles,
   isValidPlayerCount,
@@ -19,6 +20,7 @@ export function initialState(): GameState {
     players: [],
     spyCount: 0,
     challengeMode: false,
+    practice: false,
     round: 1,
     leaderIndex: 0,
     consecutiveRejects: 0,
@@ -29,6 +31,35 @@ export function initialState(): GameState {
     fails: 0,
     lastMission: null,
     winner: null,
+  }
+}
+
+/**
+ * Deal roles from a seed and drop players at a fresh roleReveal. Shared by SETUP
+ * and BEGIN_REAL_GAME so real and practice deals use the identical seeded path —
+ * no Math.random in the reducer, ever.
+ */
+function dealGame(
+  names: string[],
+  seed: number,
+  opts: { challengeMode: boolean; practice: boolean },
+): GameState {
+  const n = names.length
+  if (!isValidPlayerCount(n)) {
+    throw new Error(`Cannot start with ${n} players`)
+  }
+  const rng = mulberry32(seed)
+  const roles = buildRoles(n, rng)
+  const players: Player[] = names.map((name, id) => ({ id, name, role: roles[id]! }))
+  const leaderIndex = Math.floor(rng() * n)
+  return {
+    ...initialState(),
+    phase: 'roleReveal',
+    players,
+    spyCount: spyCount(n),
+    challengeMode: opts.challengeMode,
+    practice: opts.practice,
+    leaderIndex,
   }
 }
 
@@ -50,26 +81,22 @@ function nextLeaderIndex(state: GameState): number {
 export function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'SETUP': {
-      const n = action.names.length
-      if (!isValidPlayerCount(n)) {
-        throw new Error(`Cannot start with ${n} players`)
-      }
-      const rng = mulberry32(action.seed)
-      const roles = buildRoles(n, rng)
-      const players: Player[] = action.names.map((name, id) => ({
-        id,
-        name,
-        role: roles[id]!,
-      }))
-      const leaderIndex = Math.floor(rng() * n)
-      return {
-        ...initialState(),
-        phase: 'roleReveal',
-        players,
-        spyCount: spyCount(n),
+      return dealGame(action.names, action.seed, {
         challengeMode: action.challengeMode ?? false,
-        leaderIndex,
-      }
+        practice: action.practice ?? false,
+      })
+    }
+
+    case 'BEGIN_REAL_GAME': {
+      // Only meaningful while practicing; a no-op otherwise (strict state
+      // machine). Re-deal REAL roles with a fresh seed so practice roles never
+      // leak, carrying over the same players (by name) and challenge setting.
+      if (!state.practice) return state
+      return dealGame(
+        state.players.map((p) => p.name),
+        action.seed,
+        { challengeMode: state.challengeMode, practice: false },
+      )
     }
 
     case 'START_ROUNDS': {
@@ -111,7 +138,9 @@ export function reducer(state: GameState, action: Action): GameState {
         }
       }
       const consecutiveRejects = state.consecutiveRejects + 1
-      if (consecutiveRejects >= MAX_REJECTS) {
+      // In practice, 5 rejects doesn't hand the spies the win — it just resets
+      // the counter and rolls on, so the rehearsal never ends.
+      if (consecutiveRejects >= MAX_REJECTS && !state.practice) {
         return {
           ...state,
           consecutiveRejects,
@@ -121,7 +150,7 @@ export function reducer(state: GameState, action: Action): GameState {
       }
       return {
         ...state,
-        consecutiveRejects,
+        consecutiveRejects: state.practice && consecutiveRejects >= MAX_REJECTS ? 0 : consecutiveRejects,
         leaderIndex: nextLeaderIndex(state),
         proposedTeam: [],
         phase: 'teamProposal',
@@ -157,6 +186,24 @@ export function reducer(state: GameState, action: Action): GameState {
 
     case 'CONFIRM_MISSION': {
       if (state.phase !== 'missionReveal' || !state.lastMission) return state
+
+      // Practice: the reveal has already been shown; now loop into a FRESH
+      // practice round. Rotate the leader and cycle the round (1..5) so team
+      // sizes vary, but never touch the real score/results and never end.
+      if (state.practice) {
+        const nextRound = (state.round % MISSIONS) + 1
+        return {
+          ...state,
+          round: nextRound,
+          leaderIndex: nextLeaderIndex(state),
+          consecutiveRejects: 0,
+          proposedTeam: [],
+          missionCards: {},
+          lastMission: null,
+          phase: 'teamProposal',
+        }
+      }
+
       const results = [...state.results, state.lastMission]
       const successes = state.successes + (state.lastMission.success ? 1 : 0)
       const fails = state.fails + (state.lastMission.success ? 0 : 1)

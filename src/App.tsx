@@ -72,12 +72,27 @@ export default function App({ onExitToMenu }: { onExitToMenu?: () => void }) {
     setPaused(false)
   }
 
+  const inPractice = state.practice && state.phase !== 'setup' && state.phase !== 'gameOver'
+
   return (
     <div className="flex min-h-full flex-col items-center text-ink">
       {canPause && !paused && (
-        <div className="flex w-full max-w-md justify-end gap-2 px-3 pt-3">
-          <TopBarButton label={lex.topBar.rules} onClick={() => setRulesOpen(true)} />
-          <TopBarButton label={lex.topBar.pause} onClick={() => setPaused(true)} />
+        <div className="flex w-full max-w-md items-center justify-between gap-2 px-3 pt-3">
+          {inPractice ? (
+            <button
+              type="button"
+              onClick={() => dispatch({ type: 'BEGIN_REAL_GAME', seed: Date.now() })}
+              className="rounded-control border border-accent bg-accent/15 px-4 py-2 font-mono text-xs font-bold uppercase tracking-label text-accent transition duration-fast ease-theme hover:brightness-110 active:scale-95"
+            >
+              {lex.practice.startReal}
+            </button>
+          ) : (
+            <span />
+          )}
+          <div className="flex gap-2">
+            <TopBarButton label={lex.topBar.rules} onClick={() => setRulesOpen(true)} />
+            <TopBarButton label={lex.topBar.pause} onClick={() => setPaused(true)} />
+          </div>
         </div>
       )}
       {IN_GAME.has(state.phase) && <ScoreTrack state={state} />}

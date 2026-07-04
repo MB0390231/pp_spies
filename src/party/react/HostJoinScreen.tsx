@@ -61,6 +61,10 @@ const IN_GAME: ReadonlySet<Phase> = new Set<Phase>([
  *  player, that includes the host's own vote/card. */
 export interface HostControls {
   startGame(): void
+  /** Lobby → a practice game on throwaway roles. */
+  startPractice(): void
+  /** Leave practice and deal the real game (fresh seed). */
+  startRealGame(): void
   beginRounds(): void
   revealVotes(): void
   resolveProposal(): void
@@ -419,6 +423,9 @@ export function Board({
   // via the same SettingsSheet as Setup / MainMenu — hard mode there is honored
   // at start because HostBoard reads it from useTheme() (see below).
   const showSettingsGear = isHost && phase === 'setup'
+  // Practice banner shows on every phone during an in-game practice phase; the
+  // host additionally gets a "start the real game" control (below).
+  const inPractice = game.practice && phase !== 'setup' && phase !== 'gameOver'
   const tally = voteTally(snapshot)
   const canStart = isValidPlayerCount(snapshot.seats.length)
   const seatedOrSpectator = seat !== undefined
@@ -466,13 +473,15 @@ export function Board({
     switch (phase) {
       case 'setup':
         hostBar = (
-          <Button
-            className="w-full max-w-sm"
-            disabled={!canStart}
-            onClick={() => hostControls.startGame()}
-          >
-            {canStart ? lex.party.host.start : fmt(lex.party.host.needPlayers, { min: MIN_PLAYERS })}
-          </Button>
+          <div className="flex w-full max-w-sm flex-col gap-3">
+            <Button disabled={!canStart} onClick={() => hostControls.startGame()}>
+              {canStart ? lex.party.host.start : fmt(lex.party.host.needPlayers, { min: MIN_PLAYERS })}
+            </Button>
+            <Button variant="neutral" disabled={!canStart} onClick={() => hostControls.startPractice()}>
+              {lex.practice.start}
+            </Button>
+            <p className="text-xs italic text-muted">{lex.practice.lobbyHint}</p>
+          </div>
         )
         break
       case 'roleReveal':
@@ -583,12 +592,26 @@ export function Board({
         </div>
       </div>
 
+      {inPractice && (
+        <div className="mx-4 mt-3 w-full max-w-md rounded-card border border-accent/50 bg-accent/10 px-4 py-2 text-center">
+          <span className="font-mono text-[11px] uppercase tracking-label text-accent">
+            {lex.practice.banner}
+          </span>
+        </div>
+      )}
+
       {IN_GAME.has(phase) && <ScoreTrack state={game} />}
 
       <main className="flex w-full max-w-md flex-1 flex-col items-center gap-5 p-6">
         {board}
         <div className="mt-auto flex w-full max-w-sm flex-col gap-3">
           {hostBar}
+          {/* Host's persistent "start the real game" control during practice. */}
+          {hostControls && inPractice && (
+            <Button variant="neutral" onClick={() => hostControls.startRealGame()}>
+              {lex.practice.startReal}
+            </Button>
+          )}
           {footer}
         </div>
       </main>
@@ -642,6 +665,8 @@ export function HostBoard({
   const controller = hostController(host, hostClientId)
   const hostControls: HostControls = {
     startGame: () => host.startGame(Date.now(), hardMode),
+    startPractice: () => host.startPractice(Date.now(), hardMode),
+    startRealGame: () => host.startRealGame(Date.now()),
     beginRounds: () => host.beginRounds(),
     revealVotes: () => host.revealVotes(),
     resolveProposal: () => host.resolveProposal(),

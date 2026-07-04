@@ -38,6 +38,15 @@ export interface GameState {
   spyCount: number
   /** Challenge mode: missions 1 & 2 send one extra player. */
   challengeMode: boolean
+  /**
+   * Practice mode: the whole loop runs on THROWAWAY roles so everyone can
+   * rehearse the mechanics on their own device. Nothing counts — missions never
+   * increment `successes`/`fails`, 5 rejects never ends it, and the game never
+   * reaches `gameOver`. Each mission-reveal loops to a fresh practice round
+   * (rotated leader, cycled round for varied team sizes). `BEGIN_REAL_GAME`
+   * re-deals real roles and clears this flag so nothing is spoiled.
+   */
+  practice: boolean
 
   /** 1-based current mission number (1..5). */
   round: number
@@ -66,8 +75,16 @@ export type Action =
   /**
    * Begin a game. `seed` drives role assignment and first-leader choice so the
    * reducer stays pure — generate it at the call site (e.g. Date.now()).
+   * `practice: true` deals throwaway roles and runs the non-scoring rehearsal
+   * loop (see GameState.practice).
    */
-  | { type: 'SETUP'; names: string[]; seed: number; challengeMode?: boolean }
+  | { type: 'SETUP'; names: string[]; seed: number; challengeMode?: boolean; practice?: boolean }
+  /**
+   * Leave a practice game and start the REAL game: re-deal real roles with a
+   * fresh `seed` (so nothing about practice roles is spoiled), reset round /
+   * score / rejects, → roleReveal. Generate the seed at the call site.
+   */
+  | { type: 'BEGIN_REAL_GAME'; seed: number }
   /** Leave role reveal and start the first round. */
   | { type: 'START_ROUNDS' }
   /** Leader proposes a team (must match the required size). */

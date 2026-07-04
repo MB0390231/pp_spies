@@ -7,6 +7,11 @@ export function ScoreTrack({ state }: { state: GameState }) {
   const lex = useLexicon()
   return (
     <header className="flex w-full max-w-md flex-col gap-2 px-4 pt-4">
+      {state.practice && (
+        <span className="mx-auto rounded-chip border border-line-strong bg-raised px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-label text-muted">
+          {lex.scoreTrack.practiceTag}
+        </span>
+      )}
       <div className="flex items-center justify-between font-mono text-xs uppercase tracking-label text-faint">
         <span>{fmt(lex.scoreTrack.round, { round: state.round, total: MISSIONS })}</span>
         <span className={state.consecutiveRejects >= 3 ? 'text-danger' : ''}>

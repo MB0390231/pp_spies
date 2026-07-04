@@ -79,11 +79,33 @@ export const scenarios: Scenario[] = [
     state: make({ phase: 'roleReveal', players: P5, spyCount: 2 }),
   },
   {
+    id: 'role-practice',
+    label: 'Role Reveal — Practice',
+    Screen: RoleReveal,
+    note: 'Practice deals throwaway roles — note the "practice role" label so nobody thinks it’s their real one.',
+    state: make({ phase: 'roleReveal', players: P5, spyCount: 2, practice: true }),
+  },
+  {
     id: 'team-proposal',
     label: 'Team Proposal',
     Screen: TeamProposal,
     showScore: true,
     state: make({ phase: 'teamProposal', players: P5, spyCount: 2, round: 1, leaderIndex: 0 }),
+  },
+  {
+    id: 'team-proposal-practice',
+    label: 'Team Proposal — Practice',
+    Screen: TeamProposal,
+    note: 'A practice round in progress — the score track shows the practice badge; nothing counts.',
+    showScore: true,
+    state: make({
+      phase: 'teamProposal',
+      players: P5,
+      spyCount: 2,
+      round: 3,
+      leaderIndex: 1,
+      practice: true,
+    }),
   },
   {
     id: 'proposal-vote',

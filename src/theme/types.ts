@@ -254,6 +254,23 @@ export interface Lexicon {
     round: string
     /** {count} {max} */
     rejects: string
+    /** Badge on the score track / board while practicing. */
+    practiceTag: string
+  }
+  /** Practice round: rehearsing the mechanics on throwaway roles. */
+  practice: {
+    /** Setup button (Pass & Play) / host lobby button (networked) to start practice. */
+    start: string
+    /** The persistent "leave practice, deal the real game" control. */
+    startReal: string
+    /** Eyebrow above the practice role, so nobody thinks it's their real role. */
+    roleEyebrow: string
+    /** One-line reassurance that practice doesn't count. */
+    doesntCount: string
+    /** Big-screen / board banner during a practice round. */
+    banner: string
+    /** Host-lobby helper under the practice button. */
+    lobbyHint: string
   }
   topBar: { rules: string; pause: string }
   handoff: {

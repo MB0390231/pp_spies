@@ -173,6 +173,15 @@ export const midnightDossier: Theme = {
     scoreTrack: {
       round: 'Mission {round} / {total}',
       rejects: 'Rejects {count} / {max}',
+      practiceTag: 'Drill',
+    },
+    practice: {
+      start: 'Practice run',
+      startReal: 'Start the real mission',
+      roleEyebrow: 'Practice role — the real one is dealt later',
+      doesntCount: 'This is a dry run. Nothing here counts.',
+      banner: 'Practice drill — rehearsing the moves. Nothing counts yet.',
+      lobbyHint: 'Rehearse the whole loop on throwaway roles. Start for real when everyone’s ready.',
     },
     topBar: {
       rules: 'Rules',

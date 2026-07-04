@@ -131,6 +131,20 @@ export const hostJoinScenarios: HostJoinScenario[] = [
     snapshot: snap({ phase: 'gameOver', players: P5, spyCount: 2, winner: 'spies', successes: 1, fails: 3 }),
     joiner: 'c1',
   },
+  {
+    id: 'hj-practice-role',
+    label: 'Practice — role reveal',
+    note: 'Practice deals throwaway roles. Both phones show a PRACTICE label + banner; the host phone carries "Begin the missions" and (once in-game) "Start the real game".',
+    snapshot: snap({ phase: 'roleReveal', ...inRound, practice: true }, { roleAcks: [3] }),
+    joiner: 'c1',
+  },
+  {
+    id: 'hj-practice-round',
+    label: 'Practice — round in progress',
+    note: 'A practice round mid-flight (nothing counts). Every phone shows the practice banner; the host phone holds "Start the real game" — live: tap it to re-deal real roles.',
+    snapshot: snap({ phase: 'teamProposal', ...inRound, round: 3, leaderIndex: 1, practice: true }),
+    joiner: 'c1',
+  },
 ]
 
 interface Stage {

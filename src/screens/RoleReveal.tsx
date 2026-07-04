@@ -24,8 +24,13 @@ export function RoleReveal() {
   return (
     <PassPhoneGate key={player.id} name={player.name}>
       <div className="flex min-h-full animate-rise flex-col items-center justify-center gap-8 p-6 text-center">
+        {state.practice && (
+          <span className="rounded-chip border border-line-strong bg-raised px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-label text-muted">
+            {lex.scoreTrack.practiceTag}
+          </span>
+        )}
         <p className="font-mono text-sm uppercase tracking-label text-faint">
-          {lex.roleReveal.eyebrow}
+          {state.practice ? lex.practice.roleEyebrow : lex.roleReveal.eyebrow}
         </p>
         <h2
           className={`animate-pop font-display text-5xl font-extrabold uppercase ${

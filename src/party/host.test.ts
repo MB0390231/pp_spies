@@ -636,3 +636,112 @@ describe('staged mission reveal ordering', () => {
     expect(order[order.length - 1]).toBe('fail')
   })
 })
+
+describe('host practice controls', () => {
+  it('startPractice deals a practice game everyone mirrors', async () => {
+    const { host, clients } = await openRoom()
+    host.startPractice(42)
+    expect(host.snapshot.game.phase).toBe('roleReveal')
+    expect(host.snapshot.game.practice).toBe(true)
+    // Mirrors see the practice flag too (drives the phone's practice label).
+    expect(clients.get('Alice')!.state.snapshot?.game.practice).toBe(true)
+  })
+
+  it('startGame (non-practice) leaves practice false', async () => {
+    const { host } = await openRoom()
+    host.startGame(42)
+    expect(host.snapshot.game.practice).toBe(false)
+  })
+
+  it('a practice mission loops instead of ending, and never touches the score', async () => {
+    const { host, clients } = await openRoom()
+    host.startPractice(42)
+    host.beginRounds()
+    const rolesBefore = host.snapshot.game.players.map((p) => p.role)
+
+    // Run a whole practice mission through the networked reveal gate.
+    const spy = host.snapshot.game.players.find((p) => p.role === 'spy')!
+    proposeFirstTeam(host, clients, [spy.id])
+    voteAll(host, clients, true)
+    for (const id of host.snapshot.game.proposedTeam) {
+      const isSpy = host.snapshot.game.players.find((p) => p.id === id)!.role === 'spy'
+      clientFor(host, clients, id).playCard(isSpy ? 'fail' : 'success')
+    }
+    host.revealMission()
+    host.confirmMission()
+
+    // Looped to a fresh practice round — NOT gameOver, score untouched.
+    expect(host.snapshot.game.phase).toBe('teamProposal')
+    expect(host.snapshot.game.practice).toBe(true)
+    expect(host.snapshot.game.winner).toBeNull()
+    expect(host.snapshot.game.successes).toBe(0)
+    expect(host.snapshot.game.fails).toBe(0)
+    // Same temp roles persist across practice rounds.
+    expect(host.snapshot.game.players.map((p) => p.role)).toEqual(rolesBefore)
+  })
+
+  it('startRealGame re-deals real roles, clears practice + net, and is a no-op otherwise', async () => {
+    const { host, clients } = await openRoom()
+    host.startPractice(1)
+    // Dirty some NetMeta with a role ack while still in roleReveal.
+    clientFor(host, clients, 0).ackRole()
+    expect(host.snapshot.net.roleAcks).toContain(0)
+    host.beginRounds()
+
+    host.startRealGame(999)
+    expect(host.snapshot.game.practice).toBe(false)
+    expect(host.snapshot.game.phase).toBe('roleReveal')
+    expect(host.snapshot.game.round).toBe(1)
+    // NetMeta reset so the real reveal starts clean.
+    expect(host.snapshot.net.roleAcks).toEqual([])
+    // Seats/players preserved; real roles dealt from the fresh seed.
+    expect(host.snapshot.game.players.map((p) => p.name)).toEqual(NAMES5)
+
+    // No-op when not practicing.
+    const before = host.snapshot
+    host.startRealGame(2)
+    expect(host.snapshot).toBe(before)
+  })
+
+  it('5 rejects during practice does not end the room', async () => {
+    const { host, clients } = await openRoom()
+    host.startPractice(42)
+    host.beginRounds()
+    for (let i = 0; i < 5; i++) {
+      proposeFirstTeam(host, clients)
+      voteAll(host, clients, false)
+    }
+    expect(host.snapshot.game.phase).toBe('teamProposal')
+    expect(host.snapshot.game.winner).toBeNull()
+    expect(host.snapshot.game.consecutiveRejects).toBe(0)
+  })
+
+  it('players cannot trigger the practice→real transition — only the host method can', async () => {
+    const { host, clients } = await openRoom()
+    host.startPractice(42)
+    host.beginRounds()
+
+    // Exhaust the ENTIRE player-facing wire API (PartyClient) during practice.
+    // None of these intents can carry a transition — the Intent protocol has no
+    // such kind — so practice must stay on and the game must not re-deal.
+    const leaderId = currentLeaderId(host.snapshot.game)!
+    const leaderClient = clientFor(host, clients, leaderId)
+    leaderClient.proposeTeam(
+      host.snapshot.game.players.map((p) => p.id).slice(0, currentTeamSize(host.snapshot.game)),
+    )
+    for (const p of host.snapshot.game.players) clientFor(host, clients, p.id).vote('approve')
+    // Every player also tries acking / re-acking; still no transition surface.
+    for (const p of host.snapshot.game.players) clientFor(host, clients, p.id).ackRole()
+
+    expect(host.snapshot.game.practice).toBe(true)
+    // The host's own intent path (host acting purely as a player) likewise has
+    // no way to smuggle a transition — dispatchIntent only accepts Intents.
+    host.dispatchIntent({ kind: 'vote', playerId: leaderId, ballot: 'approve' })
+    expect(host.snapshot.game.practice).toBe(true)
+
+    // Only the host-local method performs the transition.
+    host.startRealGame(999)
+    expect(host.snapshot.game.practice).toBe(false)
+    expect(host.snapshot.game.phase).toBe('roleReveal')
+  })
+})

@@ -202,6 +202,20 @@ export const partyScenarios: PartyScenario[] = [
     phones: ['c0'],
     hideBig: true,
   },
+  {
+    id: 'party-practice-role',
+    label: 'Practice — role reveal',
+    note: 'Practice deals throwaway roles. Tap "Reveal my role": phones show a PRACTICE label; the big screen carries the practice banner + a live "start the real game" control.',
+    snapshot: { ...snap({ phase: 'roleReveal', ...inRound }, { roleAcks: [3] }), game: { ...makeGame({ phase: 'roleReveal', ...inRound }), practice: true } },
+    phones: ['c1', 'c0'],
+  },
+  {
+    id: 'party-practice-round',
+    label: 'Practice — round in progress',
+    note: 'A practice round mid-flight (nothing counts). The big screen shows the practice banner and "start the real game"; live: tap it to re-deal real roles.',
+    snapshot: { ...snap({ phase: 'proposalVote', ...inRound, proposedTeam: [1, 3] }, { ballots: { 2: 'approve' } }), game: { ...makeGame({ phase: 'proposalVote', ...inRound, proposedTeam: [1, 3] }), practice: true } },
+    phones: ['c0'],
+  },
 ]
 
 interface Stage {

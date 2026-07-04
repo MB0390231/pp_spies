@@ -185,6 +185,15 @@ export const releaseTheFiles: Theme = {
     scoreTrack: {
       round: 'File {round} / {total}',
       rejects: 'Blocked {count} / {max}',
+      practiceTag: 'Mock',
+    },
+    practice: {
+      start: 'Mock session',
+      startReal: 'Convene the real session',
+      roleEyebrow: 'Mock brief — your real one is sealed for later',
+      doesntCount: 'This is a dress rehearsal. Nothing is entered into the record.',
+      banner: 'Mock session — rehearsing procedure. Nothing is on the record yet.',
+      lobbyHint: 'Rehearse the whole procedure on mock briefs. Convene for real when the chamber’s ready.',
     },
     topBar: {
       rules: 'Procedure',

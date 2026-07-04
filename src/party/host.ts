@@ -95,6 +95,26 @@ export class PartyHost {
     this.dispatch({ type: 'SETUP', names: seats.map((s) => s.name), seed, challengeMode })
   }
 
+  /** Lobby → a PRACTICE game on throwaway roles (see GameState.practice). */
+  startPractice(seed: number, challengeMode = false): void {
+    const { game, seats } = this.snap
+    if (game.phase !== 'setup' || !isValidPlayerCount(seats.length)) return
+    this.dispatch({
+      type: 'SETUP',
+      names: seats.map((s) => s.name),
+      seed,
+      challengeMode,
+      practice: true,
+    })
+  }
+
+  /** Leave practice and deal the REAL game with a fresh seed (no spoiler). Also
+   *  clears any practice-round NetMeta so the real reveal starts clean. */
+  startRealGame(seed: number): void {
+    if (!this.snap.game.practice) return
+    this.dispatch({ type: 'BEGIN_REAL_GAME', seed }, () => emptyNet())
+  }
+
   /** Role reveal → first round. Allowed even if not everyone has acked. */
   beginRounds(): void {
     if (this.snap.game.phase !== 'roleReveal') return

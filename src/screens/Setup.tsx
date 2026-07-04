@@ -24,8 +24,8 @@ export function Setup({ onHowToPlay, onBack }: { onHowToPlay?: () => void; onBac
     setNames((prev) => prev.map((n, idx) => (idx === i ? value : n)))
   }
 
-  function start() {
-    dispatch({ type: 'SETUP', names: trimmed, seed: Date.now(), challengeMode: hardMode })
+  function start(practice = false) {
+    dispatch({ type: 'SETUP', names: trimmed, seed: Date.now(), challengeMode: hardMode, practice })
   }
 
   return (
@@ -114,11 +114,14 @@ export function Setup({ onHowToPlay, onBack }: { onHowToPlay?: () => void; onBac
       </div>
 
       <div className="mt-auto flex w-full max-w-sm flex-col gap-3">
-        <Button onClick={start} disabled={!canStart}>
+        <Button onClick={() => start(false)} disabled={!canStart}>
           {canStart ? lex.setup.start : !allNamed ? lex.setup.needNames : lex.setup.needUnique}
         </Button>
+        <Button variant="neutral" onClick={() => start(true)} disabled={!canStart}>
+          {lex.practice.start}
+        </Button>
         {onHowToPlay && (
-          <Button variant="neutral" onClick={onHowToPlay}>
+          <Button variant="ghost" onClick={onHowToPlay}>
             {lex.setup.howToPlay}
           </Button>
         )}

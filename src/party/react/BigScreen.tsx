@@ -73,10 +73,37 @@ function Lobby({ host, snapshot, onClose }: { host: PartyHost; snapshot: RoomSna
             ? lex.party.host.start
             : fmt(lex.party.host.needPlayers, { min: MIN_PLAYERS })}
         </Button>
+        <Button
+          variant="neutral"
+          onClick={() => host.startPractice(Date.now(), hardMode)}
+          disabled={!canStart}
+        >
+          {lex.practice.start}
+        </Button>
+        <p className="text-xs italic text-muted">{lex.practice.lobbyHint}</p>
         <Button variant="ghost" onClick={onClose}>
           {lex.party.host.closeRoom}
         </Button>
       </div>
+    </div>
+  )
+}
+
+/** Persistent practice banner + "start real game" control on the host screen. */
+function PracticeBar({ host }: { host: PartyHost }) {
+  const lex = useLexicon()
+  return (
+    <div className="flex w-full max-w-3xl items-center justify-between gap-3 rounded-card border border-accent/50 bg-accent/10 px-5 py-3">
+      <span className="font-mono text-xs uppercase tracking-label text-accent">
+        {lex.practice.banner}
+      </span>
+      <Button
+        variant="neutral"
+        className="!py-2 !text-sm"
+        onClick={() => host.startRealGame(Date.now())}
+      >
+        {lex.practice.startReal}
+      </Button>
     </div>
   )
 }
@@ -388,6 +415,10 @@ export function BigScreen({
   const snapshot = useHostSnapshot(host)
   const lex = useLexicon()
   const phase = snapshot.game.phase
+  // Practice affordance is available on every in-game practice phase (not the
+  // lobby, which has its own start controls, nor gameOver — practice never ends
+  // there).
+  const inPractice = snapshot.game.practice && phase !== 'setup' && phase !== 'gameOver'
 
   return (
     <div className="flex min-h-full w-full flex-col items-center text-ink">
@@ -403,6 +434,12 @@ export function BigScreen({
           {lex.party.host.roomCode} · <span className="font-bold text-ink">{snapshot.code}</span>
         </p>
       </div>
+
+      {inPractice && (
+        <div className="mt-3 w-full max-w-3xl px-6">
+          <PracticeBar host={host} />
+        </div>
+      )}
 
       {IN_GAME.has(phase) && <ScoreTrack state={snapshot.game} />}
 

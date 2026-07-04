@@ -182,10 +182,16 @@ export function RoleCard({
   if (!player) return null
   const isSpy = player.role === 'spy'
   const acked = snapshot.net.roleAcks.includes(seat.playerId)
+  const practice = snapshot.game.practice
 
   return (
     <div className="flex flex-col items-center gap-5 text-center">
-      <Eyebrow>{lex.roleReveal.eyebrow}</Eyebrow>
+      {practice && (
+        <span className="rounded-chip border border-line-strong bg-raised px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-label text-muted">
+          {lex.scoreTrack.practiceTag}
+        </span>
+      )}
+      <Eyebrow>{practice ? lex.practice.roleEyebrow : lex.roleReveal.eyebrow}</Eyebrow>
       {peeking ? (
         <>
           <h2
