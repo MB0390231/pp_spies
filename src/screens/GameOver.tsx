@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Button } from '../components/Button'
-import { useGame } from '../state/GameContext'
+import { clearPersistedGame, useGame } from '../state/GameContext'
 import { fmt, useLexicon } from '../theme'
 
 /**
  * Public screen: announce the winner, then reveal roles one player at a time —
  * the table guesses each allegiance before tapping that row's reveal button.
  */
-export function GameOver() {
+export function GameOver({ onExitToMenu }: { onExitToMenu?: () => void } = {}) {
   const { state, dispatch } = useGame()
   const lex = useLexicon()
   const [revealedIds, setRevealedIds] = useState<ReadonlySet<number>>(new Set())
@@ -80,9 +80,22 @@ export function GameOver() {
         )}
       </div>
 
-      <Button onClick={() => dispatch({ type: 'RESET' })} className="mt-auto w-full max-w-sm">
-        {lex.gameOver.playAgain}
-      </Button>
+      <div className="mt-auto flex w-full max-w-sm flex-col gap-3">
+        <Button onClick={() => dispatch({ type: 'RESET' })}>{lex.gameOver.playAgain}</Button>
+        {onExitToMenu && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              // Leaving to the menu unmounts the provider, so clear the finished
+              // game directly instead of dispatching a RESET that won't persist.
+              clearPersistedGame()
+              onExitToMenu()
+            }}
+          >
+            {lex.pause.quit}
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

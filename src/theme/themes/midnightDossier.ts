@@ -123,6 +123,7 @@ export const midnightDossier: Theme = {
         waitingOn: 'Still to act',
         playAgain: 'Back to the lobby',
         closeRoom: 'Close the room',
+        closeConfirm: 'End the session for everyone?',
       },
       player: {
         joinTitle: 'Join the operation',
