@@ -89,6 +89,51 @@ function Lobby({ host, snapshot, onClose }: { host: PartyHost; snapshot: RoomSna
   )
 }
 
+/**
+ * Host-only quit in the big-screen header. Present during the in-game phases,
+ * where the Lobby / Game Over "Close room" buttons aren't on screen — so the
+ * host is never trapped mid-game. Tap-to-confirm guards against an accidental
+ * close on a shared screen; closing publishes a `closed` snapshot that sends
+ * every player's phone back to the menu.
+ */
+function HeaderQuit({ onClose }: { onClose: () => void }) {
+  const lex = useLexicon()
+  const [confirm, setConfirm] = useState(false)
+
+  if (!confirm) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirm(true)}
+        className="rounded-control border border-line bg-surface/80 px-3 py-1.5 font-mono text-xs uppercase tracking-label text-muted transition duration-fast ease-theme hover:border-danger hover:text-danger active:scale-95"
+      >
+        {lex.party.host.closeRoom}
+      </button>
+    )
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <span className="hidden font-mono text-xs uppercase tracking-label text-faint sm:inline">
+        {lex.party.host.closeConfirm}
+      </span>
+      <button
+        type="button"
+        onClick={onClose}
+        className="rounded-control border border-danger bg-danger/15 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-label text-danger transition duration-fast ease-theme hover:brightness-110 active:scale-95"
+      >
+        {lex.party.host.closeRoom}
+      </button>
+      <button
+        type="button"
+        onClick={() => setConfirm(false)}
+        className="rounded-control border border-line bg-surface/80 px-3 py-1.5 font-mono text-xs uppercase tracking-label text-muted transition duration-fast ease-theme hover:border-line-strong hover:text-ink active:scale-95"
+      >
+        {lex.pause.cancel}
+      </button>
+    </div>
+  )
+}
+
 /** Persistent practice banner + "start real game" control on the host screen. */
 function PracticeBar({ host }: { host: PartyHost }) {
   const lex = useLexicon()
@@ -430,9 +475,14 @@ export function BigScreen({
           </span>
           {lex.app.name}
         </p>
-        <p className="rounded-chip border border-line bg-surface/80 px-3 py-1.5 font-mono text-sm uppercase tracking-label text-muted">
-          {lex.party.host.roomCode} · <span className="font-bold text-ink">{snapshot.code}</span>
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="rounded-chip border border-line bg-surface/80 px-3 py-1.5 font-mono text-sm uppercase tracking-label text-muted">
+            {lex.party.host.roomCode} · <span className="font-bold text-ink">{snapshot.code}</span>
+          </p>
+          {/* Lobby & Game Over have their own prominent "Close room"; fill the
+              in-game gap so the host can always end the session. */}
+          {phase !== 'setup' && phase !== 'gameOver' && <HeaderQuit onClose={onClose} />}
+        </div>
       </div>
 
       {inPractice && (

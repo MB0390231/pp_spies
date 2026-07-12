@@ -27,6 +27,20 @@ const KNOWN_PHASES: ReadonlySet<Phase> = new Set<Phase>([
   'gameOver',
 ])
 
+/**
+ * Wipe the saved game. Quitting to the menu unmounts the provider in the same
+ * render, so a RESET dispatch's persist effect never fires — clear the key
+ * directly so "abandon this game" actually sticks across a re-entry.
+ */
+export function clearPersistedGame(): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // Storage unavailable — nothing to clear.
+  }
+}
+
 function load(): GameState {
   if (typeof localStorage === 'undefined') return initialState()
   try {

@@ -135,6 +135,7 @@ export const releaseTheFiles: Theme = {
         waitingOn: 'Yet to be recorded',
         playAgain: 'Back to the lobby',
         closeRoom: 'Adjourn the session',
+        closeConfirm: 'Adjourn — end it for everyone?',
       },
       player: {
         joinTitle: 'Take your seat',

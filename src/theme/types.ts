@@ -183,6 +183,8 @@ export interface Lexicon {
       /** Returns everyone to the lobby with seats kept. */
       playAgain: string
       closeRoom: string
+      /** Confirm prompt shown before the host closes the room mid-game. */
+      closeConfirm: string
     }
     /** Phone copy (the player controller). */
     player: {

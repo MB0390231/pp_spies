@@ -14,7 +14,7 @@ import { RoleReveal } from './screens/RoleReveal'
 import { ProposalVote } from './screens/ProposalVote'
 import { Setup } from './screens/Setup'
 import { TeamProposal } from './screens/TeamProposal'
-import { useGame } from './state/GameContext'
+import { clearPersistedGame, useGame } from './state/GameContext'
 import { usePaused } from './state/usePaused'
 import { useLexicon } from './theme'
 
@@ -68,8 +68,17 @@ export default function App({ onExitToMenu }: { onExitToMenu?: () => void }) {
   const canPause = PAUSABLE.has(state.phase)
 
   function handleQuit() {
-    dispatch({ type: 'RESET' })
     setPaused(false)
+    if (onExitToMenu) {
+      // Leave the mode entirely so "Quit to menu" lands on the Main Menu (not
+      // just the Setup screen). The provider unmounts with us, so clear the
+      // saved game directly rather than relying on a RESET's persist effect.
+      clearPersistedGame()
+      onExitToMenu()
+    } else {
+      // No menu (storybook/tests): fall back to a plain reset to Setup.
+      dispatch({ type: 'RESET' })
+    }
   }
 
   const inPractice = state.practice && state.phase !== 'setup' && state.phase !== 'gameOver'
@@ -99,6 +108,8 @@ export default function App({ onExitToMenu }: { onExitToMenu?: () => void }) {
       <main className="flex w-full max-w-md flex-1 flex-col">
         {state.phase === 'setup' ? (
           <Setup onHowToPlay={() => setTutorialOpen(true)} onBack={onExitToMenu} />
+        ) : state.phase === 'gameOver' ? (
+          <GameOver onExitToMenu={onExitToMenu} />
         ) : (
           <Screen />
         )}
